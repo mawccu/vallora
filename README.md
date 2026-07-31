@@ -88,14 +88,18 @@ All hand written, no animation library.
   self host them and drop the two `preconnect` tags.
 - Motion respects `prefers-reduced-motion`, which disables the intro, the
   cursor, splitting and parallax outright.
-- The `#sharpen` SVG convolution filter recovers apparent edge detail on the
-  640px source photography, above 900px only. It is applied through a `.sharp`
-  class that `main.js` adds **only after confirming the filter element is in the
-  document**, because a `filter:url(#id)` reference that cannot resolve does not
-  degrade gracefully: Chrome skips painting the element entirely. Opting in this
-  way means a stale HTML and fresh CSS pair mid-deploy costs sharpness rather
-  than every image on the page. Verified by serving the page with the `<svg>`
-  block stripped.
-- Grain does more for perceived quality than the sharpen does. Real photography
-  still beats both by a wide margin.
+- **The imagery is untouched on purpose.** No grading, no sharpening. These are
+  640px placeholder frames off the public Instagram grid, and they are meant to
+  look like exactly that until the brand supplies real photography. An SVG
+  sharpen convolution and per-image grading were both built and then removed at
+  the client's request. Grade the real shots when they land rather than
+  reintroducing a sharpen pass.
+- If you ever reintroduce `filter:url(#someId)`, gate it behind a class that JS
+  adds only after confirming the filter is in the document. An unresolvable
+  filter reference does not degrade: Chrome skips painting the element outright,
+  which blanks every image it touches.
+- Two treatments are kept because they solve composition, not quality: the
+  Phase 02 backdrop is blurred and offset, and one gallery tile is crop-biased
+  left. Both exist to push burned-in campaign text out of the way. Drop them
+  once the real photography arrives.
 - Breakpoints at 900px and 560px.

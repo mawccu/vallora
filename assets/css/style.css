@@ -46,8 +46,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
 ::selection{background:var(--ember);color:var(--ink)}
 
-.svg-defs{position:absolute;width:0;height:0;overflow:hidden}
-
 .skip{
   position:absolute;left:-9999px;top:0;z-index:400;
   padding:12px 20px;background:var(--paper);color:var(--ink);
@@ -415,8 +413,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   width:100%;height:100%;
   object-fit:cover;
   object-position:center 38%;
+  /* opacity only, and only so the hero copy stays legible over it */
   opacity:.5;
-  filter:grayscale(.22) contrast(1.1) saturate(1.05);
   transform:scale(1.08);
   animation:heroDrift 26s var(--ease) forwards;
 }
@@ -551,7 +549,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .frame img{
   width:100%;height:100%;
   object-fit:cover;
-  filter:contrast(1.04);
   transition:transform 1.2s var(--ease);
 }
 .frame:hover img{transform:scale(1.05)}
@@ -609,7 +606,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .detail__img img{
   width:100%;height:100%;
   object-fit:cover;object-position:center 20%;
-  filter:contrast(1.04);
 }
 .detail__copy p{color:var(--paper-dim);max-width:34ch;margin:0}
 
@@ -633,10 +629,9 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .gal img{
   width:100%;height:100%;
   object-fit:cover;
-  filter:grayscale(.2) contrast(1.05);
-  transition:transform 1.2s var(--ease),filter .8s var(--ease);
+  transition:transform 1.2s var(--ease);
 }
-.gal:hover img{transform:scale(1.06);filter:grayscale(0) contrast(1.05)}
+.gal:hover img{transform:scale(1.06)}
 
 /* this frame carries campaign text burned into its right third. bias the crop
    left so a portrait tile lands on the subject and drops the overlay. */
@@ -924,23 +919,16 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   .footer__nav{text-align:left}
 }
 
-/* ── sharpening ─────────────────────────────────────────────
-   feConvolveMatrix recovers apparent edge detail the 640px source lost. It is
-   layered on top of the plain filters above rather than baked into them,
-   because `filter:url(#id)` that cannot resolve does not degrade: the browser
-   drops the element entirely. Keeping it opt-in means a stale HTML/CSS pair
-   during a deploy costs sharpness, not every image on the page.
+/* NOTE ON IMAGERY
+   The photography is placeholder: 640px frames off the public Instagram grid,
+   pending real shots from the brand. Per-image grading and an SVG sharpen
+   convolution were tried and deliberately removed, so what renders is the
+   source frame untouched. When the real photography lands, grade it here
+   rather than reintroducing a sharpen pass.
 
-   `.sharp` is set by main.js only after confirming the filter is in the
-   document. Above the tablet breakpoint only, where the convolution is worth
-   what it costs. */
-
-@media (min-width:901px){
-  .sharp .hero__media img{filter:url(#sharpen) grayscale(.22) contrast(1.1) saturate(1.05)}
-  .sharp .frame img,.sharp .detail__img img{filter:url(#sharpen) contrast(1.04)}
-  .sharp .gal img{filter:url(#sharpen) grayscale(.2) contrast(1.05)}
-  .sharp .gal:hover img{filter:url(#sharpen) grayscale(0) contrast(1.05)}
-}
+   If you ever do bring back `filter:url(#someId)`: an unresolvable reference
+   does not degrade, Chrome drops the element from painting entirely. Gate it
+   behind a class set only after confirming the filter is in the document. */
 
 @media (prefers-reduced-motion:reduce){
   html{scroll-behavior:auto}

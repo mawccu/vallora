@@ -5,13 +5,6 @@
   var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 
-  // Only opt into the SVG sharpen once the filter is confirmed present. An
-  // unresolvable filter:url() reference makes Chrome skip painting the element
-  // altogether, so this must never be assumed.
-  if (document.getElementById('sharpen')) {
-    document.documentElement.classList.add('sharp');
-  }
-
   /* ── split text ──────────────────────────────────────────
      Wraps each visual line (or character) in an overflow-hidden
      mask so it can slide up from nothing. Runs before the

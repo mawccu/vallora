@@ -39,16 +39,6 @@
 
 <a class="skip" href="#main">Skip to content</a>
 
-<!-- ─ svg filters ─
-     feConvolveMatrix recovers apparent edge detail on the source photography,
-     which tops out at 640px. Kernel sums to 1 so overall luminance holds. -->
-<svg class="svg-defs" aria-hidden="true" focusable="false">
-  <filter id="sharpen" x="0" y="0" width="100%" height="100%">
-    <feConvolveMatrix order="3" preserveAlpha="true"
-      kernelMatrix="0 -0.6 0 -0.6 3.4 -0.6 0 -0.6 0"/>
-  </filter>
-</svg>
-
 <div class="grain" aria-hidden="true"></div>
 <div class="progress" aria-hidden="true"><span></span></div>
 
