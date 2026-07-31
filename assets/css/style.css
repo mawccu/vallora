@@ -416,8 +416,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   object-fit:cover;
   object-position:center 38%;
   opacity:.5;
-  /* sharpen recovers edge detail the 640px source lost */
-  filter:url(#sharpen) grayscale(.22) contrast(1.1) saturate(1.05);
+  filter:grayscale(.22) contrast(1.1) saturate(1.05);
   transform:scale(1.08);
   animation:heroDrift 26s var(--ease) forwards;
 }
@@ -552,7 +551,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .frame img{
   width:100%;height:100%;
   object-fit:cover;
-  filter:url(#sharpen) contrast(1.04);
+  filter:contrast(1.04);
   transition:transform 1.2s var(--ease);
 }
 .frame:hover img{transform:scale(1.05)}
@@ -610,7 +609,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .detail__img img{
   width:100%;height:100%;
   object-fit:cover;object-position:center 20%;
-  filter:url(#sharpen) contrast(1.04);
+  filter:contrast(1.04);
 }
 .detail__copy p{color:var(--paper-dim);max-width:34ch;margin:0}
 
@@ -634,10 +633,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .gal img{
   width:100%;height:100%;
   object-fit:cover;
-  filter:url(#sharpen) grayscale(.2) contrast(1.05);
+  filter:grayscale(.2) contrast(1.05);
   transition:transform 1.2s var(--ease),filter .8s var(--ease);
 }
-.gal:hover img{transform:scale(1.06);filter:url(#sharpen) grayscale(0) contrast(1.05)}
+.gal:hover img{transform:scale(1.06);filter:grayscale(0) contrast(1.05)}
 
 /* this frame carries campaign text burned into its right third. bias the crop
    left so a portrait tile lands on the subject and drops the overlay. */
@@ -827,13 +826,18 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 }
 .js .reveal.is-in{opacity:1;transform:none}
 
-/* clip driven image reveal */
-.js .unmask{
+/* Clip driven image reveal.
+   The clip goes on the IMAGE, never on the observed element itself. An element
+   collapsed by its own clip-path reports no intersection area, so an
+   IntersectionObserver watching it would never fire, and the class that lifts
+   the clip would never be added. That deadlock shipped once already and blanked
+   every image on the page. Keep the observed box unclipped. */
+.js .unmask > img{
   clip-path:inset(0 0 100% 0);
   transition:clip-path 1.15s var(--ease-mask);
   transition-delay:calc(var(--d,0) * 90ms);
 }
-.js .unmask.is-in{clip-path:inset(0 0 0 0)}
+.js .unmask.is-in > img{clip-path:inset(0 0 0 0)}
 
 /* split text: each line/char sits in an overflow-hidden mask and slides up */
 .line{display:block;overflow:hidden}
@@ -920,14 +924,22 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   .footer__nav{text-align:left}
 }
 
-/* the sharpen convolution is the most expensive thing here and buys least on a
-   small, dense display, so drop it below the tablet breakpoint */
-@media (max-width:900px){
-  .hero__media img{filter:grayscale(.22) contrast(1.1) saturate(1.05)}
-  .frame img,.detail__img img{filter:contrast(1.04)}
-  .gal img{filter:grayscale(.2) contrast(1.05)}
-  .gal:hover img{filter:grayscale(0) contrast(1.05)}
-  .phase02__media img{filter:grayscale(.5)}
+/* ── sharpening ─────────────────────────────────────────────
+   feConvolveMatrix recovers apparent edge detail the 640px source lost. It is
+   layered on top of the plain filters above rather than baked into them,
+   because `filter:url(#id)` that cannot resolve does not degrade: the browser
+   drops the element entirely. Keeping it opt-in means a stale HTML/CSS pair
+   during a deploy costs sharpness, not every image on the page.
+
+   `.sharp` is set by main.js only after confirming the filter is in the
+   document. Above the tablet breakpoint only, where the convolution is worth
+   what it costs. */
+
+@media (min-width:901px){
+  .sharp .hero__media img{filter:url(#sharpen) grayscale(.22) contrast(1.1) saturate(1.05)}
+  .sharp .frame img,.sharp .detail__img img{filter:url(#sharpen) contrast(1.04)}
+  .sharp .gal img{filter:url(#sharpen) grayscale(.2) contrast(1.05)}
+  .sharp .gal:hover img{filter:url(#sharpen) grayscale(0) contrast(1.05)}
 }
 
 @media (prefers-reduced-motion:reduce){
@@ -938,7 +950,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
     transition-duration:.01ms !important;
   }
   .js .reveal,.js .line__inner,.js .char{opacity:1;transform:none}
-  .js .unmask{clip-path:none}
+  .js .unmask > img{clip-path:none}
   .grain{animation:none}
   .cursor{display:none}
   .js body,.js a,.js button{cursor:auto}

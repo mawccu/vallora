@@ -5,6 +5,13 @@
   var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 
+  // Only opt into the SVG sharpen once the filter is confirmed present. An
+  // unresolvable filter:url() reference makes Chrome skip painting the element
+  // altogether, so this must never be assumed.
+  if (document.getElementById('sharpen')) {
+    document.documentElement.classList.add('sharp');
+  }
+
   /* ── split text ──────────────────────────────────────────
      Wraps each visual line (or character) in an overflow-hidden
      mask so it can slide up from nothing. Runs before the
@@ -54,20 +61,41 @@
     if (d) el.style.setProperty('--d', d);
   });
 
-  var watched = document.querySelectorAll('.reveal, .unmask, [data-split]');
+  var watched = [].slice.call(document.querySelectorAll('.reveal, .unmask, [data-split]'));
+
+  // Anything not yet revealed. The scroll loop sweeps this by plain geometry,
+  // which is immune to whatever the observer does or does not report.
+  var pending = watched.slice();
+
+  function reveal(el) {
+    el.classList.add('is-in');
+    var i = pending.indexOf(el);
+    if (i > -1) pending.splice(i, 1);
+  }
 
   if ('IntersectionObserver' in window) {
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
         if (!entry.isIntersecting) return;
-        entry.target.classList.add('is-in');
+        reveal(entry.target);
         io.unobserve(entry.target);
       });
-    }, { threshold: 0.12, rootMargin: '0px 0px -8% 0px' });
+    }, { threshold: 0.08, rootMargin: '0px 0px -8% 0px' });
 
     watched.forEach(function (el) { io.observe(el); });
   } else {
-    watched.forEach(function (el) { el.classList.add('is-in'); });
+    watched.forEach(reveal);
+  }
+
+  // Safety sweep. getBoundingClientRect ignores clip-path and filters, so this
+  // still fires for anything the observer misses. Never let a decorative
+  // hidden state be the reason content cannot be seen.
+  function sweep() {
+    if (!pending.length) return;
+    var edge = window.innerHeight * 0.92;
+    for (var i = pending.length - 1; i >= 0; i--) {
+      if (pending[i].getBoundingClientRect().top < edge) reveal(pending[i]);
+    }
   }
 
   /* ── intro ───────────────────────────────────────────────
@@ -125,6 +153,8 @@
     nav.classList.toggle('is-hidden', y > 400 && y > lastY);
 
     if (bar) bar.style.transform = 'scaleX(' + (y / limit()).toFixed(4) + ')';
+
+    sweep();
 
     if (!reduced) {
       for (var i = 0; i < parallax.length; i++) {

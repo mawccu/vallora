@@ -59,7 +59,16 @@ All hand written, no animation library.
   devices only.
 - **Magnetic buttons.** `.magnetic` elements lean toward the cursor.
 
-### Two things to preserve if you edit this
+### Three things to preserve if you edit this
+
+0. **Never put the reveal's hidden state on the observed element itself.** The
+   `.unmask` clip lives on the child `img`, not on the figure the
+   IntersectionObserver watches. An element collapsed by its own `clip-path`
+   reports no intersection area, so the observer never fires, so the class that
+   lifts the clip is never added. That deadlock shipped once and blanked every
+   image on the site. `main.js` also runs a `getBoundingClientRect` safety sweep
+   inside the scroll loop, which is immune to clip and filter effects, so a
+   missed observer can never again be the reason content is invisible.
 
 1. **The `js` watchdog.** The inline script in `<head>` adds a `js` class, and
    every hidden-until-revealed state is gated on it. If `main.js` 404s or
@@ -80,7 +89,13 @@ All hand written, no animation library.
 - Motion respects `prefers-reduced-motion`, which disables the intro, the
   cursor, splitting and parallax outright.
 - The `#sharpen` SVG convolution filter recovers apparent edge detail on the
-  640px source photography. It is dropped below 900px, where it costs more than
-  it returns. Combined with the grain layer it is what makes the imagery read as
-  film rather than as low resolution. Real photography still beats both.
+  640px source photography, above 900px only. It is applied through a `.sharp`
+  class that `main.js` adds **only after confirming the filter element is in the
+  document**, because a `filter:url(#id)` reference that cannot resolve does not
+  degrade gracefully: Chrome skips painting the element entirely. Opting in this
+  way means a stale HTML and fresh CSS pair mid-deploy costs sharpness rather
+  than every image on the page. Verified by serving the page with the `<svg>`
+  block stripped.
+- Grain does more for perceived quality than the sharpen does. Real photography
+  still beats both by a wide margin.
 - Breakpoints at 900px and 560px.
