@@ -42,18 +42,14 @@ the publish directory and asset caching. No build command needed.
    the `href` values.
 5. **Favicon.** Currently the 150px Instagram avatar. Export a proper one.
 
-## The two set pieces
+## The set piece
 
-**WebGL hero** (`assets/js/hero-gl.js`). The hero frame is rendered through a
-custom fragment shader on a fullscreen triangle: raw WebGL1, no library. A slow
-two octave value noise drives a flowing UV displacement, the pointer pushes a
-ripple through it, chromatic split scales with the displacement magnitude, and a
-vignette and fine grain sit on top. Scrolling settles the whole field downward.
-
-The `<img>` underneath is the fallback and is only faded out once the first
-frame has genuinely drawn, so no WebGL, a failed shader compile, a failed link
-or a lost context all leave the original hero exactly as it was. Device pixel
-ratio is capped at 2 and the loop idles when the hero is off screen.
+The hero is a plain image on purpose. A WebGL shader was built for it (flowing
+noise displacement, pointer ripple, chromatic split) and then **removed at the
+client's request**, because the displacement and the colour split softened the
+frame and he wants the hero readable and sharp. If it is ever revisited, the
+lesson is that any distortion is fighting a 640px source. Do it after the real
+photography lands, not before.
 
 **Pinned horizontal lookbook** (`.rail`). The outer element is 420vh tall, the
 inner one sticks to the viewport, and the track is translated across as you
