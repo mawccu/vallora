@@ -409,6 +409,19 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 }
 
 .hero__media{position:absolute;inset:-12% 0;will-change:transform}
+
+/* shader surface sits over the fallback image and only becomes visible once
+   it has actually drawn a frame */
+.hero__gl{
+  position:absolute;inset:0;
+  width:100%;height:100%;
+  display:block;
+  opacity:0;
+  transition:opacity 1.4s var(--ease);
+}
+.hero__gl.is-on{opacity:.62}
+.hero__media.gl-on img{opacity:0;transition:opacity 1s var(--ease)}
+
 .hero__media img{
   width:100%;height:100%;
   object-fit:cover;
@@ -611,10 +624,102 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
 /* ── lookbook ───────────────────────────────────────────── */
 
-.gallery{
+/* ── pinned horizontal rail ─────────────────────────────────
+   Outer element is tall, inner sticks to the viewport, JS slides the track
+   across as you scroll that height. All of it is gated on `js` so that if the
+   script never runs the section falls back to ordinary vertical flow rather
+   than a screen of empty space. */
+
+.rail{position:relative}
+.rail__inner{position:relative}
+
+.rail__track{
   display:grid;
-  grid-template-columns:repeat(3,1fr);
+  grid-template-columns:repeat(2,1fr);
   gap:clamp(.6rem,1.4vw,1.1rem);
+  padding-inline:var(--gut);
+  max-width:var(--wrap);
+  margin-inline:auto;
+}
+
+.rail__bar,.rail__hud{display:none}
+
+.rail__end{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  justify-content:center;
+  gap:1.4rem;
+  padding:2.5rem 0;
+}
+.rail__end .eyebrow{margin:0}
+
+@media (min-width:901px){
+  .js .rail{height:420vh}
+
+  .js .rail__inner{
+    position:sticky;top:0;
+    height:100vh;
+    display:flex;
+    align-items:center;
+    overflow:hidden;
+  }
+
+  .js .rail__track{
+    display:flex;
+    grid-template-columns:none;
+    align-items:center;
+    gap:clamp(1rem,2.2vw,2rem);
+    padding-inline:max(var(--gut),calc((100vw - var(--wrap)) / 2 + var(--gut)));
+    max-width:none;
+    margin:0;
+    will-change:transform;
+  }
+
+  .js .rail__track > .gal{
+    flex:none;
+    height:64vh;
+    width:auto;
+    aspect-ratio:3/4;
+  }
+  .js .rail__track > .gal--wide{aspect-ratio:16/10}
+
+  .js .rail__end{
+    flex:none;
+    width:min(38vw,420px);
+    padding-inline:clamp(2rem,5vw,5rem);
+  }
+
+  /* fixed to the pinned viewport, so the section keeps its label and a live
+     position readout while the track slides underneath */
+  .js .rail__hud{
+    display:flex;
+    position:absolute;
+    left:var(--gut);right:var(--gut);top:12vh;
+    justify-content:space-between;
+    align-items:baseline;
+    font-size:.66rem;
+    letter-spacing:var(--track-lg);
+    text-transform:uppercase;
+    color:var(--paper-dim);
+    pointer-events:none;
+  }
+  .js .rail__hud-count em{font-style:normal;color:var(--paper)}
+
+  /* horizontal progress, sits on the pinned viewport not the track */
+  .js .rail__bar{
+    display:block;
+    position:absolute;
+    left:var(--gut);right:var(--gut);bottom:8vh;
+    height:1px;
+    background:var(--line);
+  }
+  .js .rail__bar span{
+    display:block;height:100%;width:100%;
+    background:var(--paper);
+    transform:scaleX(0);
+    transform-origin:left;
+  }
 }
 
 .gal{
@@ -885,7 +990,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
   .feedback__grid{grid-template-columns:1fr}
 
-  .gallery{grid-template-columns:repeat(2,1fr)}
+  .rail__track{grid-template-columns:repeat(2,1fr)}
   .gal--wide{grid-column:span 2}
 
   /* captions have no hover to trigger them on touch */
@@ -912,7 +1017,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   .specs>div{flex-direction:column;gap:.3rem}
   .specs dd{text-align:left}
 
-  .gallery{grid-template-columns:1fr}
+  .rail__track{grid-template-columns:1fr}
   .gal,.gal--wide{grid-column:span 1;aspect-ratio:4/5}
 
   .footer__inner{grid-template-columns:1fr}

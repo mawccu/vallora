@@ -128,6 +128,20 @@
   var parallax = [].slice.call(document.querySelectorAll('[data-parallax]'));
   var marqueeTrack = document.querySelector('.marquee__track');
 
+  var rail = document.getElementById('rail');
+  var railTrack = document.getElementById('railTrack');
+  var railBar = document.getElementById('railBar');
+  var railIdx = document.getElementById('railIdx');
+  var railCount = railTrack ? railTrack.querySelectorAll('.gal').length : 0;
+  var railRange = 0;
+
+  // How far the track has to travel: its full width minus one viewport.
+  // Remeasured on resize and after images load, since both change the width.
+  function measureRail() {
+    if (!railTrack || window.innerWidth <= 900) { railRange = 0; return; }
+    railRange = Math.max(0, railTrack.scrollWidth - window.innerWidth);
+  }
+
   var lastY = window.scrollY;
   var marqueeX = 0;
   var velocity = 0;
@@ -161,6 +175,24 @@
       }
     }
 
+    if (railRange > 0) {
+      var rr = rail.getBoundingClientRect();
+      // progress through the tall outer element while the inner one is pinned
+      var travel = Math.max(1, rr.height - window.innerHeight);
+      var p = Math.min(1, Math.max(0, -rr.top / travel));
+      railTrack.style.transform = 'translate3d(' + (-p * railRange).toFixed(1) + 'px,0,0)';
+      if (railBar) railBar.style.transform = 'scaleX(' + p.toFixed(4) + ')';
+
+      if (railIdx) {
+        // which tile is currently nearest the left edge of the pinned viewport
+        var n = Math.min(railCount, Math.floor(p * railCount) + 1);
+        var label = n < 10 ? '0' + n : String(n);
+        if (railIdx.textContent !== label) railIdx.textContent = label;
+      }
+    } else if (railTrack) {
+      railTrack.style.transform = '';
+    }
+
     velocity = y - lastY;
     lastY = y;
   }
@@ -172,7 +204,17 @@
   }
 
   window.addEventListener('scroll', onScroll, { passive: true });
-  window.addEventListener('resize', onScroll, { passive: true });
+  window.addEventListener('resize', function () { measureRail(); onScroll(); }, { passive: true });
+  window.addEventListener('load', function () { measureRail(); onScroll(); });
+
+  // lazy images settle after the observer fires, which changes the track width
+  if (railTrack) {
+    railTrack.querySelectorAll('img').forEach(function (im) {
+      im.addEventListener('load', function () { measureRail(); onScroll(); }, { once: true });
+    });
+  }
+
+  measureRail();
   frame();
 
   /* marquee: constant drift, pushed along by scroll velocity */

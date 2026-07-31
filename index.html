@@ -89,6 +89,9 @@
   <section class="hero" id="top">
     <div class="hero__media" data-parallax="0.28">
       <img src="assets/img/vallora-11.jpg" alt="" aria-hidden="true" fetchpriority="high">
+      <!-- shader surface. stays transparent until the first frame renders, so
+           a WebGL failure simply leaves the image above untouched. -->
+      <canvas class="hero__gl" aria-hidden="true"></canvas>
     </div>
     <div class="hero__scrim"></div>
 
@@ -186,14 +189,37 @@
         <p class="section__meta reveal" data-delay="3">Five frames . Jordan . 2026</p>
       </header>
 
-      <div class="gallery">
-        <figure class="gal gal--wide unmask" data-cursor="view"><img src="assets/img/vallora-12.jpg" alt="Phase 01 tee at golden hour above the valley" loading="lazy"><figcaption><span>01</span> Above the valley</figcaption></figure>
-        <figure class="gal unmask" data-delay="1" data-cursor="view"><img src="assets/img/vallora-08.jpg" alt="Riding out in the Phase 01 tee" loading="lazy"><figcaption><span>02</span> Riding out</figcaption></figure>
-        <figure class="gal unmask" data-delay="2" data-cursor="view"><img src="assets/img/vallora-05.jpg" alt="Phase 01 campaign frame at sunset" loading="lazy"><figcaption><span>03</span> Last light</figcaption></figure>
-        <figure class="gal gal--crop-left unmask" data-delay="1" data-cursor="view"><img src="assets/img/vallora-10.jpg" alt="Phase 01 tee on the steps at dusk" loading="lazy"><figcaption><span>04</span> The steps</figcaption></figure>
-        <figure class="gal unmask" data-delay="2" data-cursor="view"><img src="assets/img/vallora-09.jpg" alt="Phase 01 launch frame" loading="lazy"><figcaption><span>05</span> Launch day</figcaption></figure>
-      </div>
+    </div>
 
+    <!-- Pinned horizontal rail. The outer element is tall, the inner one
+         sticks, and JS translates the track across as you scroll through that
+         height. Native scroll throughout, nothing is hijacked. Below 900px the
+         whole thing collapses back to a single column grid. -->
+    <div class="rail" id="rail">
+      <div class="rail__inner">
+        <div class="rail__track" id="railTrack">
+          <figure class="gal gal--wide unmask" data-cursor="view"><img src="assets/img/vallora-12.jpg" alt="Phase 01 tee at golden hour above the valley" loading="lazy"><figcaption><span>01</span> Above the valley</figcaption></figure>
+          <figure class="gal unmask" data-delay="1" data-cursor="view"><img src="assets/img/vallora-08.jpg" alt="Riding out in the Phase 01 tee" loading="lazy"><figcaption><span>02</span> Riding out</figcaption></figure>
+          <figure class="gal unmask" data-delay="2" data-cursor="view"><img src="assets/img/vallora-05.jpg" alt="Phase 01 campaign frame at sunset" loading="lazy"><figcaption><span>03</span> Last light</figcaption></figure>
+          <figure class="gal gal--crop-left unmask" data-delay="1" data-cursor="view"><img src="assets/img/vallora-10.jpg" alt="Phase 01 tee on the steps at dusk" loading="lazy"><figcaption><span>04</span> The steps</figcaption></figure>
+          <figure class="gal unmask" data-delay="2" data-cursor="view"><img src="assets/img/vallora-09.jpg" alt="Phase 01 launch frame" loading="lazy"><figcaption><span>05</span> Launch day</figcaption></figure>
+
+          <div class="rail__end">
+            <p class="eyebrow">End of Phase 01</p>
+            <a class="btn btn--ghost magnetic" href="https://www.instagram.com/vallorawear/" target="_blank" rel="noopener">See more on Instagram</a>
+          </div>
+        </div>
+
+        <div class="rail__hud" aria-hidden="true">
+          <span class="rail__hud-title">Lookbook</span>
+          <span class="rail__hud-count"><em id="railIdx">01</em> / 05</span>
+        </div>
+
+        <div class="rail__bar" aria-hidden="true"><span id="railBar"></span></div>
+      </div>
+    </div>
+
+    <div class="wrap">
       <p class="gallery__note reveal">
         More on <a href="https://www.instagram.com/vallorawear/" target="_blank" rel="noopener">@vallorawear</a>.
       </p>
@@ -283,5 +309,6 @@
 </footer>
 
 <script src="assets/js/main.js"></script>
+<script src="assets/js/hero-gl.js"></script>
 </body>
 </html>
