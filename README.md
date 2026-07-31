@@ -42,9 +42,45 @@ the publish directory and asset caching. No build command needed.
    the `href` values.
 5. **Favicon.** Currently the 150px Instagram avatar. Export a proper one.
 
+## Motion
+
+All hand written, no animation library.
+
+- **Split text.** `main.js` rewraps anything with `data-split` into per line or
+  per character spans inside overflow masks, then an IntersectionObserver slides
+  them up. `data-delay` seeds the stagger.
+- **Clip reveals.** `.unmask` elements wipe in via `clip-path`.
+- **Parallax.** `data-parallax="0.28"` moves an element against scroll at that
+  fraction, batched into one `requestAnimationFrame`.
+- **Marquee.** Drifts on a CSS keyframe; JS upgrades it to scroll velocity
+  reactive and only then switches the keyframe off.
+- **Cursor.** Dot tracks the pointer, ring lags behind it, both hidden until the
+  first `mousemove`. Gallery tiles swap it for a "View" bubble. Pointer-fine
+  devices only.
+- **Magnetic buttons.** `.magnetic` elements lean toward the cursor.
+
+### Two things to preserve if you edit this
+
+1. **The `js` watchdog.** The inline script in `<head>` adds a `js` class, and
+   every hidden-until-revealed state is gated on it. If `main.js` 404s or
+   throws, a 3 second timer strips the class and the page renders as plain
+   static content. Without that net a script failure would leave the page
+   permanently blank. `main.js` sets `window.__valloraReady` at the end to call
+   the watchdog off. Verified by pointing the script tag at a missing file.
+2. **Character splitting and letter-spacing.** Each character becomes its own
+   `inline-block`, so tracking would otherwise apply twice, once inside each box
+   and again between boxes, and the browser gains a line break opportunity
+   between every letter. `[data-split="chars"]` is therefore `nowrap` with
+   `letter-spacing:0` on the child `.char`. Do not remove either.
+
 ## Notes
 
 - Fonts load from Google Fonts (Inter 200/300/400/500). To go fully offline,
   self host them and drop the two `preconnect` tags.
-- Motion respects `prefers-reduced-motion`.
+- Motion respects `prefers-reduced-motion`, which disables the intro, the
+  cursor, splitting and parallax outright.
+- The `#sharpen` SVG convolution filter recovers apparent edge detail on the
+  640px source photography. It is dropped below 900px, where it costs more than
+  it returns. Combined with the grain layer it is what makes the imagery read as
+  film rather than as low resolution. Real photography still beats both.
 - Breakpoints at 900px and 560px.

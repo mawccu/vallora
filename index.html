@@ -18,24 +18,62 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500&display=swap" rel="stylesheet">
+<link rel="preload" as="image" href="assets/img/vallora-11.jpg">
 <link rel="stylesheet" href="assets/css/style.css">
+
+<!-- `js` gates every hidden-until-revealed state, and is set before first paint
+     so content never flashes. The watchdog is the safety net: if main.js is
+     blocked, 404s or throws, the class comes back off and the page renders as
+     plain static content rather than staying invisible. -->
+<script>
+  document.documentElement.className += ' js';
+  setTimeout(function () {
+    if (!window.__valloraReady) {
+      document.documentElement.className =
+        document.documentElement.className.replace(/\bjs\b/, '');
+    }
+  }, 3000);
+</script>
 </head>
 <body>
 
 <a class="skip" href="#main">Skip to content</a>
+
+<!-- ─ svg filters ─
+     feConvolveMatrix recovers apparent edge detail on the source photography,
+     which tops out at 640px. Kernel sums to 1 so overall luminance holds. -->
+<svg class="svg-defs" aria-hidden="true" focusable="false">
+  <filter id="sharpen" x="0" y="0" width="100%" height="100%">
+    <feConvolveMatrix order="3" preserveAlpha="true"
+      kernelMatrix="0 -0.6 0 -0.6 3.4 -0.6 0 -0.6 0"/>
+  </filter>
+</svg>
+
+<div class="grain" aria-hidden="true"></div>
+<div class="progress" aria-hidden="true"><span></span></div>
+
+<div class="cursor" aria-hidden="true">
+  <div class="cursor__ring"><span class="cursor__label"></span></div>
+  <div class="cursor__dot"></div>
+</div>
+
+<div class="intro" aria-hidden="true">
+  <div class="intro__mark">VALLORA</div>
+  <div class="intro__bar"><span></span></div>
+</div>
 
 <header class="nav" id="nav">
   <div class="nav__inner">
     <a class="wordmark wordmark--sm" href="#top" aria-label="Vallora home">VALLORA</a>
 
     <nav class="nav__links" aria-label="Primary">
-      <a href="#phase01">Phase 01</a>
-      <a href="#lookbook">Lookbook</a>
-      <a href="#ethos">Ethos</a>
-      <a href="#phase02">Phase 02</a>
+      <a href="#phase01"><span>Phase 01</span></a>
+      <a href="#lookbook"><span>Lookbook</span></a>
+      <a href="#ethos"><span>Ethos</span></a>
+      <a href="#phase02"><span>Phase 02</span></a>
     </nav>
 
-    <a class="btn btn--sm" href="https://www.instagram.com/vallorawear/" target="_blank" rel="noopener">
+    <a class="btn btn--sm magnetic" href="https://www.instagram.com/vallorawear/" target="_blank" rel="noopener">
       DM to order
     </a>
 
@@ -59,36 +97,40 @@
 
   <!-- ─ hero ─ -->
   <section class="hero" id="top">
-    <div class="hero__media">
+    <div class="hero__media" data-parallax="0.28">
       <img src="assets/img/vallora-11.jpg" alt="" aria-hidden="true" fetchpriority="high">
     </div>
     <div class="hero__scrim"></div>
 
     <div class="hero__body">
-      <p class="eyebrow reveal">Phase 01 . Live now</p>
-      <h1 class="wordmark wordmark--hero reveal" data-delay="1">VALLORA</h1>
-      <p class="hero__tag reveal" data-delay="2">Not just clothing.<br><em>A mindset.</em></p>
+      <p class="eyebrow" data-split="chars">Phase 01 . Live now</p>
+      <h1 class="wordmark wordmark--hero" data-split="chars" data-delay="120">VALLORA</h1>
+      <p class="hero__tag" data-split="lines" data-delay="420">Not just clothing.<br><em>A mindset.</em></p>
 
-      <div class="hero__actions reveal" data-delay="3">
-        <a class="btn" href="https://www.instagram.com/vallorawear/" target="_blank" rel="noopener">Order via DM</a>
-        <a class="btn btn--ghost" href="#phase01">See Phase 01</a>
+      <div class="hero__actions reveal" data-delay="6">
+        <a class="btn magnetic" href="https://www.instagram.com/vallorawear/" target="_blank" rel="noopener">Order via DM</a>
+        <a class="btn btn--ghost magnetic" href="#phase01">See Phase 01</a>
       </div>
     </div>
 
-    <a class="hero__scroll" href="#phase01" aria-label="Scroll to Phase 01">
-      <span class="hero__scroll-line"></span>
-    </a>
+    <div class="hero__foot">
+      <span class="hero__coord">31.9539&deg; N . 35.9106&deg; E</span>
+      <a class="hero__scroll" href="#phase01" aria-label="Scroll to Phase 01">
+        <span class="hero__scroll-line"></span>
+      </a>
+      <span class="hero__coord hero__coord--r">Est. 2026</span>
+    </div>
   </section>
 
   <!-- ─ marquee ─ -->
   <div class="marquee" aria-hidden="true">
     <div class="marquee__track">
-      <span>FEARLESS SOUL</span><i>◆</i>
-      <span>WORLDWIDE MOBILITY</span><i>◆</i>
-      <span>PHASE 01</span><i>◆</i>
-      <span>FEARLESS SOUL</span><i>◆</i>
-      <span>WORLDWIDE MOBILITY</span><i>◆</i>
-      <span>PHASE 01</span><i>◆</i>
+      <span>FEARLESS SOUL</span><i>&#9670;</i>
+      <span>WORLDWIDE MOBILITY</span><i>&#9670;</i>
+      <span>PHASE 01</span><i>&#9670;</i>
+      <span>FEARLESS SOUL</span><i>&#9670;</i>
+      <span>WORLDWIDE MOBILITY</span><i>&#9670;</i>
+      <span>PHASE 01</span><i>&#9670;</i>
     </div>
   </div>
 
@@ -96,34 +138,34 @@
   <section class="section product" id="phase01">
     <div class="wrap product__grid">
 
-      <div class="product__media reveal">
-        <figure class="frame frame--tall">
+      <div class="product__media">
+        <figure class="frame frame--tall unmask" data-parallax="0.08">
           <img src="assets/img/vallora-04.jpg" alt="Rear view of the Phase 01 tee, Fearless Soul back print, beside a motorcycle" loading="lazy">
         </figure>
-        <figure class="frame frame--offset">
+        <figure class="frame frame--offset unmask" data-delay="2">
           <img src="assets/img/vallora-13.jpg" alt="Close detail of the Vallora chest mark on the Phase 01 tee" loading="lazy">
         </figure>
       </div>
 
       <div class="product__copy">
-        <p class="eyebrow reveal">Phase 01</p>
-        <h2 class="h2 reveal" data-delay="1">The only tee<br>you need.</h2>
+        <p class="eyebrow reveal"><span class="idx">01</span> Phase 01</p>
+        <h2 class="h2" data-split="lines">The only tee<br>you need.</h2>
         <p class="lede reveal" data-delay="2">
           One silhouette, cut heavy and worn in from the first day. Built to be
           the thing you reach for without thinking, on the bike, in the gym,
           three hundred kilometres from anywhere.
         </p>
 
-        <dl class="specs reveal" data-delay="3">
-          <div><dt>Back print</dt><dd>FEARLESS SOUL, set vertical</dd></div>
-          <div><dt>Under print</dt><dd>WORLDWIDE MOBILITY</dd></div>
-          <div><dt>Colourway</dt><dd>Black</dd></div>
-          <div><dt>Drop</dt><dd>Phase 01, limited run</dd></div>
+        <dl class="specs">
+          <div class="reveal" data-delay="3"><dt>Back print</dt><dd>FEARLESS SOUL, set vertical</dd></div>
+          <div class="reveal" data-delay="4"><dt>Under print</dt><dd>WORLDWIDE MOBILITY</dd></div>
+          <div class="reveal" data-delay="5"><dt>Colourway</dt><dd>Black</dd></div>
+          <div class="reveal" data-delay="6"><dt>Drop</dt><dd>Phase 01, limited run</dd></div>
         </dl>
 
         <!-- TODO: real price + size run once the brand confirms them -->
-        <div class="product__cta reveal" data-delay="4">
-          <a class="btn" href="https://www.instagram.com/vallorawear/" target="_blank" rel="noopener">DM to order</a>
+        <div class="product__cta reveal" data-delay="7">
+          <a class="btn magnetic" href="https://www.instagram.com/vallorawear/" target="_blank" rel="noopener">DM to order</a>
           <p class="note">Sizes and pricing confirmed over DM.</p>
         </div>
       </div>
@@ -133,12 +175,12 @@
 
   <!-- ─ detail strip ─ -->
   <section class="detail">
-    <figure class="detail__img reveal">
+    <figure class="detail__img unmask" data-parallax="0.1">
       <img src="assets/img/vallora-06.jpg" alt="Phase 01 tee styled with denim" loading="lazy">
     </figure>
-    <div class="detail__copy reveal" data-delay="1">
-      <h3 class="h3">Made for the ride,<br>not the mirror.</h3>
-      <p>
+    <div class="detail__copy">
+      <h3 class="h3" data-split="lines">Made for the ride,<br>not the mirror.</h3>
+      <p class="reveal" data-delay="2">
         Every frame in this collection was shot where the clothes actually live.
         Open road, last light, no studio.
       </p>
@@ -148,17 +190,18 @@
   <!-- ─ lookbook ─ -->
   <section class="section" id="lookbook">
     <div class="wrap">
-      <header class="section__head">
-        <p class="eyebrow reveal">Lookbook</p>
-        <h2 class="h2 reveal" data-delay="1">Phase 01, on location.</h2>
+      <header class="section__head section__head--split">
+        <p class="eyebrow reveal"><span class="idx">02</span> Lookbook</p>
+        <h2 class="h2" data-split="lines">Phase 01, on location.</h2>
+        <p class="section__meta reveal" data-delay="3">Five frames . Jordan . 2026</p>
       </header>
 
       <div class="gallery">
-        <figure class="gal gal--wide reveal"><img src="assets/img/vallora-12.jpg" alt="Phase 01 tee at golden hour above the valley" loading="lazy"></figure>
-        <figure class="gal reveal" data-delay="1"><img src="assets/img/vallora-08.jpg" alt="Riding out in the Phase 01 tee" loading="lazy"></figure>
-        <figure class="gal reveal" data-delay="2"><img src="assets/img/vallora-05.jpg" alt="Phase 01 campaign frame at sunset" loading="lazy"></figure>
-        <figure class="gal gal--crop-left reveal" data-delay="1"><img src="assets/img/vallora-10.jpg" alt="Phase 01 tee on the steps at dusk" loading="lazy"></figure>
-        <figure class="gal reveal" data-delay="2"><img src="assets/img/vallora-09.jpg" alt="Phase 01 launch frame" loading="lazy"></figure>
+        <figure class="gal gal--wide unmask" data-cursor="view"><img src="assets/img/vallora-12.jpg" alt="Phase 01 tee at golden hour above the valley" loading="lazy"><figcaption><span>01</span> Above the valley</figcaption></figure>
+        <figure class="gal unmask" data-delay="1" data-cursor="view"><img src="assets/img/vallora-08.jpg" alt="Riding out in the Phase 01 tee" loading="lazy"><figcaption><span>02</span> Riding out</figcaption></figure>
+        <figure class="gal unmask" data-delay="2" data-cursor="view"><img src="assets/img/vallora-05.jpg" alt="Phase 01 campaign frame at sunset" loading="lazy"><figcaption><span>03</span> Last light</figcaption></figure>
+        <figure class="gal gal--crop-left unmask" data-delay="1" data-cursor="view"><img src="assets/img/vallora-10.jpg" alt="Phase 01 tee on the steps at dusk" loading="lazy"><figcaption><span>04</span> The steps</figcaption></figure>
+        <figure class="gal unmask" data-delay="2" data-cursor="view"><img src="assets/img/vallora-09.jpg" alt="Phase 01 launch frame" loading="lazy"><figcaption><span>05</span> Launch day</figcaption></figure>
       </div>
 
       <p class="gallery__note reveal">
@@ -170,8 +213,8 @@
   <!-- ─ ethos ─ -->
   <section class="section ethos" id="ethos">
     <div class="wrap ethos__inner">
-      <p class="eyebrow reveal">Ethos</p>
-      <blockquote class="ethos__quote reveal" data-delay="1">
+      <p class="eyebrow reveal"><span class="idx">03</span> Ethos</p>
+      <blockquote class="ethos__quote" data-split="lines">
         Not just clothing.<br><span>A mindset.</span>
       </blockquote>
       <div class="ethos__cols">
@@ -215,15 +258,15 @@
 
   <!-- ─ phase 02 ─ -->
   <section class="phase02" id="phase02">
-    <div class="phase02__media">
+    <div class="phase02__media" data-parallax="0.2">
       <img src="assets/img/vallora-03.jpg" alt="" aria-hidden="true" loading="lazy">
     </div>
     <div class="phase02__scrim"></div>
     <div class="phase02__body">
-      <p class="eyebrow reveal">Next</p>
-      <h2 class="phase02__title reveal" data-delay="1">PHASE 02</h2>
-      <p class="phase02__sub reveal" data-delay="2">Coming 2026</p>
-      <a class="btn btn--ghost reveal" data-delay="3" href="https://www.instagram.com/vallorawear/" target="_blank" rel="noopener">
+      <p class="eyebrow reveal"><span class="idx">04</span> Next</p>
+      <h2 class="phase02__title" data-split="chars" data-delay="80">PHASE 02</h2>
+      <p class="phase02__sub reveal" data-delay="4">Coming 2026</p>
+      <a class="btn btn--ghost magnetic reveal" data-delay="5" href="https://www.instagram.com/vallorawear/" target="_blank" rel="noopener">
         Follow for the drop
       </a>
     </div>
