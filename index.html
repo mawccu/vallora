@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>VALLORA . Not just clothing, a mindset.</title>
-<meta name="description" content="VALLORA. Minimal streetwear built for the road. Phase 01 is live. Fearless Soul. Worldwide mobility.">
-<meta name="theme-color" content="#050505">
+<title>VALLORA . Phase 01 . Fearless Soul</title>
+<meta name="description" content="VALLORA. Minimal streetwear built for the road. Phase 01, Fearless Soul, is live. Limited run, closed when gone.">
+<meta name="theme-color" content="#060606">
 
 <meta property="og:type" content="website">
-<meta property="og:title" content="VALLORA">
+<meta property="og:title" content="VALLORA . Phase 01">
 <meta property="og:description" content="Not just clothing, a mindset. Phase 01 is live.">
 <meta property="og:image" content="https://mawccu.github.io/vallora/assets/img/vallora-11.jpg">
 <meta property="og:url" content="https://mawccu.github.io/vallora/">
@@ -17,14 +17,15 @@
 <link rel="icon" href="assets/img/vallora-00.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;900&family=Inter:wght@200;300;400;500&display=swap" rel="stylesheet">
 <link rel="preload" as="image" href="assets/img/vallora-11.jpg">
 <link rel="stylesheet" href="assets/css/style.css">
 
 <!-- `js` gates every hidden-until-revealed state, and is set before first paint
      so content never flashes. The watchdog is the safety net: if main.js is
      blocked, 404s or throws, the class comes back off and the page renders as
-     plain static content rather than staying invisible. -->
+     plain static content rather than staying invisible. This has already saved
+     the site once, keep it. -->
 <script>
   document.documentElement.className += ' js';
   setTimeout(function () {
@@ -47,9 +48,17 @@
   <div class="cursor__dot"></div>
 </div>
 
-<div class="intro" aria-hidden="true">
-  <div class="intro__mark">VALLORA</div>
-  <div class="intro__bar"><span></span></div>
+<!-- ─ loader ─
+     The count is real: it tracks how many of the campaign frames have actually
+     decoded, so the curtain lifts on a page that is ready to be seen rather
+     than on a timer. The timeout in main.js is only the escape hatch. -->
+<div class="loader" id="loader" aria-hidden="true">
+  <div class="loader__mark">VALLORA</div>
+  <div class="loader__meta">
+    <span>Phase 01</span>
+    <span class="loader__pct" id="loaderPct">000</span>
+  </div>
+  <div class="loader__bar"><span id="loaderBar"></span></div>
 </div>
 
 <header class="nav" id="nav">
@@ -63,8 +72,8 @@
       <a href="#contact"><span>Contact</span></a>
     </nav>
 
-    <a class="btn btn--sm magnetic" href="https://www.instagram.com/vallorawear/" target="_blank" rel="noopener">
-      DM to order
+    <a class="nav__cta magnetic" href="https://www.instagram.com/vallorawear/" target="_blank" rel="noopener">
+      <span class="nav__dot" aria-hidden="true"></span>DM to order
     </a>
 
     <button class="burger" id="burger" aria-label="Menu" aria-expanded="false" aria-controls="mobileMenu">
@@ -75,10 +84,10 @@
 
 <div class="mobile-menu" id="mobileMenu" hidden>
   <nav aria-label="Mobile">
-    <a href="#shop">Shop</a>
-    <a href="#lookbook">Lookbook</a>
-    <a href="#ethos">Ethos</a>
-    <a href="#contact">Contact</a>
+    <a href="#shop"><em>01</em> Shop</a>
+    <a href="#lookbook"><em>02</em> Lookbook</a>
+    <a href="#ethos"><em>03</em> Ethos</a>
+    <a href="#contact"><em>04</em> Contact</a>
     <a class="mobile-menu__cta" href="https://www.instagram.com/vallorawear/" target="_blank" rel="noopener">DM to order</a>
   </nav>
 </div>
@@ -86,90 +95,161 @@
 <main id="main">
 
   <!-- ─ hero ─
-       Landing per the client's reference (theironwilled.com): one full-bleed
-       campaign frame, the drop title, and exactly two doors in: SHOP and
-       LOOKBOOK. The brand is shooting a dedicated hero frame for this —
-       swap the img src below when it lands, nothing else has to change. -->
+       One full-bleed campaign frame, the drop title, two doors in. The frame
+       opens from a narrow centre column to full bleed once the loader lifts,
+       which is the only "effect" on the photography: a mask, never a filter.
+       The brand is shooting a dedicated hero frame, swap the sources in
+       .hero__slide when it lands. -->
   <section class="hero" id="top">
-    <div class="hero__media" data-parallax="0.28">
-      <img src="assets/img/vallora-11.jpg" alt="" aria-hidden="true" fetchpriority="high">
+    <div class="hero__mask">
+      <div class="hero__media" data-parallax="0.22">
+        <div class="hero__slide is-on"><img src="assets/img/vallora-11.jpg" alt="" aria-hidden="true" fetchpriority="high"></div>
+        <div class="hero__slide"><img src="assets/img/vallora-05.jpg" alt="" aria-hidden="true"></div>
+        <div class="hero__slide"><img src="assets/img/vallora-09.jpg" alt="" aria-hidden="true"></div>
+      </div>
+      <div class="hero__scrim"></div>
     </div>
-    <div class="hero__scrim"></div>
 
     <div class="hero__body">
-      <p class="eyebrow" data-split="chars">Phase 01 . Live now</p>
+      <p class="hero__eyebrow" data-split="chars">Phase 01 . Live now</p>
       <h1 class="wordmark wordmark--hero" data-split="chars" data-delay="120">VALLORA</h1>
-      <p class="hero__drop" data-split="lines" data-delay="420">PHASE 01: FEARLESS SOUL</p>
 
-      <div class="hero__actions reveal" data-delay="6">
-        <a class="btn magnetic" href="#shop">Shop</a>
+      <div class="hero__rule" aria-hidden="true"><span></span></div>
+
+      <p class="hero__drop" data-split="lines" data-delay="520">FEARLESS SOUL</p>
+
+      <div class="hero__actions reveal" data-delay="7">
+        <a class="btn magnetic" href="#shop">Shop the drop</a>
         <a class="btn btn--ghost magnetic" href="#lookbook">Lookbook</a>
       </div>
     </div>
 
     <div class="hero__foot">
       <span class="hero__coord">31.9539&deg; N . 35.9106&deg; E</span>
-      <a class="hero__scroll" href="#phase01" aria-label="Scroll to Phase 01">
+      <a class="hero__scroll" href="#shop" aria-label="Scroll to the shop">
         <span class="hero__scroll-line"></span>
       </a>
       <span class="hero__coord hero__coord--r">Est. 2026</span>
     </div>
   </section>
 
-  <!-- ─ marquee ─ -->
+  <!-- ─ ticker ─ -->
   <div class="marquee" aria-hidden="true">
     <div class="marquee__track">
       <span>FEARLESS SOUL</span><i>&#9670;</i>
       <span>WORLDWIDE MOBILITY</span><i>&#9670;</i>
-      <span>PHASE 01</span><i>&#9670;</i>
+      <span>LIMITED RUN</span><i>&#9670;</i>
+      <span>CLOSED WHEN GONE</span><i>&#9670;</i>
       <span>FEARLESS SOUL</span><i>&#9670;</i>
       <span>WORLDWIDE MOBILITY</span><i>&#9670;</i>
-      <span>PHASE 01</span><i>&#9670;</i>
+      <span>LIMITED RUN</span><i>&#9670;</i>
+      <span>CLOSED WHEN GONE</span><i>&#9670;</i>
     </div>
   </div>
 
-  <!-- ─ shop ─
-       Four shirts per the brand's plan. Only the Phase 01 tee is real today;
-       the other three cards are dashed placeholders (repo convention: dashed
-       placeholders cannot ship unnoticed) waiting on names, photos and prices.
-       Each card carries its own size chart, wash care and reviews inside a
-       native <details>, so everything works with scripting off.
-
-       TODO before launch:
-         1. Swap the three placeholder cards for the real shirts.
-         2. Confirm the size-chart measurements (dashed until then).
-         3. Real prices — every card currently says "Price over DM".
-         4. Real review quotes from the "Feedbacks" IG highlight. Do NOT
-            invent them (see README). -->
-  <section class="section shop" id="shop">
+  <!-- ─ manifesto ─
+       Words light up one at a time as the block crosses the viewport. The
+       highlight is driven from the scroll loop, and every word is paper
+       coloured to begin with when scripting is off. -->
+  <section class="manifesto">
     <div class="wrap">
-      <header class="section__head section__head--split">
-        <p class="eyebrow reveal"><span class="idx">01</span> Shop</p>
-        <h2 class="h2" data-split="lines">Phase 01.<br>Four shirts. That's it.</h2>
-        <p class="section__meta reveal" data-delay="3">Limited run . Closed when gone</p>
+      <p class="manifesto__text" data-words>
+        Four pieces a phase. Cut heavy, worn in from the first day, shot where
+        the clothes actually live. No endless catalogue, no restocks, no noise.
+        When a phase closes it stays closed.
+      </p>
+      <div class="manifesto__meta">
+        <span class="reveal">Amman, Jordan</span>
+        <span class="reveal" data-delay="1">Since 2026</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       SHOP
+       Deliberately inverted: paper ground, ink type. The rest of the
+       site is the brand film, this block is the store, and the switch
+       is what tells you which is which.
+
+       Four pieces per the brand's plan. Only the Phase 01 tee is real
+       today, the other three are dashed placeholders (repo convention:
+       a placeholder must never be able to ship unnoticed).
+
+       TODO before launch
+         1. Swap the three placeholder cards for the real pieces.
+         2. Confirm the size chart measurements, dashed until then.
+         3. Real prices, every card says "Price over DM".
+         4. Real review quotes from the "Feedbacks" IG highlight.
+            Do NOT invent them, see README.
+       ═══════════════════════════════════════════════════════════ -->
+  <section class="shop" id="shop">
+    <div class="wrap">
+
+      <header class="shop__head">
+        <p class="eyebrow reveal"><span class="idx">01</span> The drop</p>
+        <h2 class="display" data-split="lines">PHASE 01<br>FEARLESS SOUL</h2>
+        <div class="shop__headmeta">
+          <p class="reveal" data-delay="2">Four pieces. Limited run. Sizes and pricing over DM until checkout opens.</p>
+          <p class="shop__count reveal" data-delay="3"><em>04</em> pieces</p>
+        </div>
       </header>
 
       <div class="shop__grid">
 
         <!-- 1 · the real one -->
-        <article class="shop-card unmask">
-          <a class="shop-card__media" href="#lookbook" data-cursor="view" aria-label="Fearless Soul tee in the lookbook">
-            <img src="assets/img/vallora-04.jpg" alt="Rear view of the Fearless Soul tee, back print set vertical, beside a motorcycle" loading="lazy">
-          </a>
-          <div class="shop-card__row">
-            <h3 class="shop-card__name">FEARLESS SOUL TEE &middot; [BLACK]</h3>
-            <p class="shop-card__price">Price over DM</p>
+        <article class="card unmask"
+                 data-product="Fearless Soul Tee"
+                 data-colour="Black">
+          <div class="card__media" data-cursor="open">
+            <img class="card__img" src="assets/img/vallora-04.jpg" alt="Rear view of the Fearless Soul tee, back print set vertical, beside a motorcycle" loading="lazy">
+            <img class="card__img card__img--alt" src="assets/img/vallora-13.jpg" alt="" aria-hidden="true" loading="lazy">
+            <span class="card__badge">Phase 01</span>
+            <span class="card__no">01</span>
+            <button class="card__open" type="button">Quick look</button>
           </div>
-          <dl class="specs specs--card">
-            <div><dt>Back print</dt><dd>FEARLESS SOUL, set vertical</dd></div>
-            <div><dt>Under print</dt><dd>WORLDWIDE MOBILITY</dd></div>
-            <div><dt>Cut</dt><dd>Heavy, oversized</dd></div>
-          </dl>
-          <details class="shop-card__more">
-            <summary><span>Size chart &middot; Care &middot; Reviews</span></summary>
-            <div class="shop-card__panel">
 
-              <h4 class="panel__label">Size chart <em>(cm, flat)</em></h4>
+          <div class="card__row">
+            <h3 class="card__name">Fearless Soul Tee <em>[Black]</em></h3>
+            <p class="card__price">Price over DM</p>
+          </div>
+          <p class="card__sub">Heavy cotton . Oversized cut</p>
+
+          <!-- The panel is the single source of truth for this product. With
+               scripting off it stays here as a native <details>. With scripting
+               on, main.js hides the <details> and MOVES this node into the
+               overlay when the card is opened, then puts it back on close. One
+               copy of the content either way. -->
+          <details class="card__more">
+            <summary><span>Size chart . Care . Reviews</span></summary>
+            <div class="panel" data-panel>
+
+              <div class="panel__sizes">
+                <h4 class="panel__label">Select size</h4>
+                <div class="chips" data-sizes>
+                  <button type="button" class="chip" data-size="S">S</button>
+                  <button type="button" class="chip" data-size="M">M</button>
+                  <button type="button" class="chip" data-size="L">L</button>
+                  <button type="button" class="chip" data-size="XL">XL</button>
+                </div>
+                <p class="note">Pick a size and the order message writes itself.</p>
+              </div>
+
+              <div class="panel__actions">
+                <a class="btn btn--solid magnetic" data-order-wa
+                   href="https://wa.me/000000000000" target="_blank" rel="noopener">Order on WhatsApp</a>
+                <a class="btn btn--ghost magnetic" data-order-ig
+                   href="https://www.instagram.com/vallorawear/" target="_blank" rel="noopener">DM on Instagram</a>
+              </div>
+
+              <h4 class="panel__label">Specification</h4>
+              <dl class="specs">
+                <div><dt>Back print</dt><dd>FEARLESS SOUL, set vertical</dd></div>
+                <div><dt>Under print</dt><dd>WORLDWIDE MOBILITY</dd></div>
+                <div><dt>Chest</dt><dd>VALLORA mark</dd></div>
+                <div><dt>Cut</dt><dd>Heavy, oversized</dd></div>
+              </dl>
+
+              <h4 class="panel__label">Size chart <em>(cm, laid flat)</em></h4>
               <table class="sizes is-placeholder">
                 <thead><tr><th>Size</th><th>Chest</th><th>Length</th><th>Sleeve</th></tr></thead>
                 <tbody>
@@ -179,132 +259,149 @@
                   <tr><td>XL</td><td>62</td><td>76</td><td>25</td></tr>
                 </tbody>
               </table>
-              <p class="note">Measurements to be confirmed before launch &mdash; sizing help over DM.</p>
+              <p class="note">Measurements unconfirmed, sizing help over DM.</p>
 
               <h4 class="panel__label">Wash care</h4>
               <ul class="care">
                 <li>Machine wash cold, inside out</li>
                 <li>Wash with similar colours, no bleach</li>
-                <li>Hang dry &mdash; skip the tumble dryer</li>
+                <li>Hang dry, skip the tumble dryer</li>
                 <li>Never iron the print directly</li>
               </ul>
 
               <h4 class="panel__label">Reviews</h4>
               <figure class="quote is-placeholder">
-                <blockquote>Real words from the first run go here &mdash; pulled from the Feedbacks highlight, never invented.</blockquote>
+                <blockquote>Real words from the first run go here, pulled from the Feedbacks highlight, never invented.</blockquote>
                 <figcaption>Name, city</figcaption>
               </figure>
               <p class="note">Got one? Send your photo and your words on
                 <a href="https://www.instagram.com/vallorawear/" target="_blank" rel="noopener">Instagram</a>
                 and it goes up here.</p>
-
-              <a class="btn btn--sm magnetic" href="https://www.instagram.com/vallorawear/" target="_blank" rel="noopener">DM to order</a>
             </div>
           </details>
         </article>
 
         <!-- 2 · placeholder -->
-        <article class="shop-card shop-card--placeholder unmask" data-delay="1">
-          <a class="shop-card__media" href="#lookbook" data-cursor="view" aria-label="Shirt two, details coming">
-            <img src="assets/img/vallora-13.jpg" alt="Close detail of the Vallora chest mark" loading="lazy">
-          </a>
-          <div class="shop-card__row">
-            <h3 class="shop-card__name">SHIRT 02 &middot; [NAME TBC]</h3>
-            <p class="shop-card__price">Price over DM</p>
+        <article class="card card--tbc unmask" data-delay="1" data-product="Piece 02">
+          <div class="card__media" data-cursor="open">
+            <img class="card__img" src="assets/img/vallora-06.jpg" alt="Phase 01 tee styled with denim" loading="lazy">
+            <span class="card__badge card__badge--tbc">Coming</span>
+            <span class="card__no">02</span>
+            <button class="card__open" type="button">Quick look</button>
           </div>
-          <p class="shop-card__tbc">Details landing with the drop.</p>
-          <details class="shop-card__more">
-            <summary><span>Size chart &middot; Care</span></summary>
-            <div class="shop-card__panel">
-              <p class="note">Size chart and care for this shirt land with its release. Sizing help over DM any time.</p>
-              <a class="btn btn--sm magnetic" href="https://www.instagram.com/vallorawear/" target="_blank" rel="noopener">Ask over DM</a>
+          <div class="card__row">
+            <h3 class="card__name">Piece 02 <em>[Name TBC]</em></h3>
+            <p class="card__price">Price over DM</p>
+          </div>
+          <p class="card__sub">Details landing with the drop</p>
+
+          <details class="card__more">
+            <summary><span>What we can tell you</span></summary>
+            <div class="panel" data-panel>
+              <p class="note">Name, photography, spec and pricing for this piece land with its
+                release. Sizing help over DM any time.</p>
+              <div class="panel__actions">
+                <a class="btn btn--ghost magnetic" href="https://www.instagram.com/vallorawear/" target="_blank" rel="noopener">Ask over DM</a>
+              </div>
             </div>
           </details>
         </article>
 
         <!-- 3 · placeholder -->
-        <article class="shop-card shop-card--placeholder unmask" data-delay="2">
-          <a class="shop-card__media" href="#lookbook" data-cursor="view" aria-label="Shirt three, details coming">
-            <img src="assets/img/vallora-06.jpg" alt="Phase 01 tee styled with denim" loading="lazy">
-          </a>
-          <div class="shop-card__row">
-            <h3 class="shop-card__name">SHIRT 03 &middot; [NAME TBC]</h3>
-            <p class="shop-card__price">Price over DM</p>
+        <article class="card card--tbc unmask" data-delay="2" data-product="Piece 03">
+          <div class="card__media" data-cursor="open">
+            <img class="card__img" src="assets/img/vallora-10.jpg" alt="Phase 01 tee on the steps at dusk" loading="lazy">
+            <span class="card__badge card__badge--tbc">Coming</span>
+            <span class="card__no">03</span>
+            <button class="card__open" type="button">Quick look</button>
           </div>
-          <p class="shop-card__tbc">Details landing with the drop.</p>
-          <details class="shop-card__more">
-            <summary><span>Size chart &middot; Care</span></summary>
-            <div class="shop-card__panel">
-              <p class="note">Size chart and care for this shirt land with its release. Sizing help over DM any time.</p>
-              <a class="btn btn--sm magnetic" href="https://www.instagram.com/vallorawear/" target="_blank" rel="noopener">Ask over DM</a>
+          <div class="card__row">
+            <h3 class="card__name">Piece 03 <em>[Name TBC]</em></h3>
+            <p class="card__price">Price over DM</p>
+          </div>
+          <p class="card__sub">Details landing with the drop</p>
+
+          <details class="card__more">
+            <summary><span>What we can tell you</span></summary>
+            <div class="panel" data-panel>
+              <p class="note">Name, photography, spec and pricing for this piece land with its
+                release. Sizing help over DM any time.</p>
+              <div class="panel__actions">
+                <a class="btn btn--ghost magnetic" href="https://www.instagram.com/vallorawear/" target="_blank" rel="noopener">Ask over DM</a>
+              </div>
             </div>
           </details>
         </article>
 
         <!-- 4 · placeholder -->
-        <article class="shop-card shop-card--placeholder unmask" data-delay="3">
-          <a class="shop-card__media" href="#lookbook" data-cursor="view" aria-label="Shirt four, details coming">
-            <img src="assets/img/vallora-10.jpg" alt="Phase 01 tee on the steps at dusk" loading="lazy">
-          </a>
-          <div class="shop-card__row">
-            <h3 class="shop-card__name">SHIRT 04 &middot; [NAME TBC]</h3>
-            <p class="shop-card__price">Price over DM</p>
+        <article class="card card--tbc unmask" data-delay="3" data-product="Piece 04">
+          <div class="card__media" data-cursor="open">
+            <img class="card__img" src="assets/img/vallora-12.jpg" alt="Phase 01 tee at golden hour above the valley" loading="lazy">
+            <span class="card__badge card__badge--tbc">Coming</span>
+            <span class="card__no">04</span>
+            <button class="card__open" type="button">Quick look</button>
           </div>
-          <p class="shop-card__tbc">Details landing with the drop.</p>
-          <details class="shop-card__more">
-            <summary><span>Size chart &middot; Care</span></summary>
-            <div class="shop-card__panel">
-              <p class="note">Size chart and care for this shirt land with its release. Sizing help over DM any time.</p>
-              <a class="btn btn--sm magnetic" href="https://www.instagram.com/vallorawear/" target="_blank" rel="noopener">Ask over DM</a>
+          <div class="card__row">
+            <h3 class="card__name">Piece 04 <em>[Name TBC]</em></h3>
+            <p class="card__price">Price over DM</p>
+          </div>
+          <p class="card__sub">Details landing with the drop</p>
+
+          <details class="card__more">
+            <summary><span>What we can tell you</span></summary>
+            <div class="panel" data-panel>
+              <p class="note">Name, photography, spec and pricing for this piece land with its
+                release. Sizing help over DM any time.</p>
+              <div class="panel__actions">
+                <a class="btn btn--ghost magnetic" href="https://www.instagram.com/vallorawear/" target="_blank" rel="noopener">Ask over DM</a>
+              </div>
             </div>
           </details>
         </article>
 
       </div>
-
-      <p class="gallery__note reveal">Sizes and pricing confirmed over DM until checkout opens.</p>
     </div>
   </section>
 
-  <!-- ─ detail strip ─ -->
-  <section class="detail">
-    <figure class="detail__img unmask" data-parallax="0.1">
-      <img src="assets/img/vallora-06.jpg" alt="Phase 01 tee styled with denim" loading="lazy">
+  <!-- ─ statement strip ─ -->
+  <section class="strip">
+    <figure class="strip__img unmask" data-parallax="0.12">
+      <img src="assets/img/vallora-08.jpg" alt="Riding out in the Phase 01 tee" loading="lazy">
     </figure>
-    <div class="detail__copy">
+    <div class="strip__copy">
       <h3 class="h3" data-split="lines">Made for the ride,<br>not the mirror.</h3>
       <p class="reveal" data-delay="2">
         Every frame in this collection was shot where the clothes actually live.
         Open road, last light, no studio.
       </p>
+      <a class="link reveal" data-delay="3" href="#lookbook">
+        <span>See the lookbook</span>
+      </a>
     </div>
   </section>
 
-  <!-- ─ lookbook ─ -->
-  <section class="section" id="lookbook">
+  <!-- ─ lookbook ─
+       Pinned horizontal rail. The outer element is tall, the inner one sticks,
+       and JS translates the track across as you scroll through that height.
+       Native scroll throughout, nothing is hijacked, and it can also be
+       dragged. Below 900px the whole thing collapses to a single column. -->
+  <section class="lookbook" id="lookbook">
     <div class="wrap">
-      <header class="section__head section__head--split">
+      <header class="lookbook__head">
         <p class="eyebrow reveal"><span class="idx">02</span> Lookbook</p>
-        <h2 class="h2" data-split="lines">Phase 01, on location.</h2>
-        <p class="section__meta reveal" data-delay="3">Five frames . Jordan . 2026</p>
+        <h2 class="display display--outline" data-split="lines">ON LOCATION</h2>
+        <p class="lookbook__meta reveal" data-delay="3">Five frames . Jordan . 2026</p>
       </header>
-
     </div>
 
-    <!-- Pinned horizontal rail. The outer element is tall, the inner one
-         sticks, and JS translates the track across as you scroll through that
-         height. Native scroll throughout, nothing is hijacked. Below 900px the
-         whole thing collapses back to a single column grid. -->
     <div class="rail" id="rail">
       <div class="rail__inner">
         <div class="rail__track" id="railTrack">
-          <!-- Captions sit bottom-left on every frame, always visible, one
-               line of brand meaning each — per the client's reference. -->
-          <figure class="gal gal--wide unmask" data-cursor="view"><img src="assets/img/vallora-12.jpg" alt="Phase 01 tee at golden hour above the valley" loading="lazy"><figcaption><span>01</span> Fearless soul &mdash; the back says it for you</figcaption></figure>
-          <figure class="gal unmask" data-delay="1" data-cursor="view"><img src="assets/img/vallora-08.jpg" alt="Riding out in the Phase 01 tee" loading="lazy"><figcaption><span>02</span> Worldwide mobility &mdash; made to travel</figcaption></figure>
-          <figure class="gal unmask" data-delay="2" data-cursor="view"><img src="assets/img/vallora-05.jpg" alt="Phase 01 campaign frame at sunset" loading="lazy"><figcaption><span>03</span> Shot where the clothes live &mdash; no studio</figcaption></figure>
-          <figure class="gal gal--crop-left unmask" data-delay="1" data-cursor="view"><img src="assets/img/vallora-10.jpg" alt="Phase 01 tee on the steps at dusk" loading="lazy"><figcaption><span>04</span> Worn in from day one &mdash; not the mirror</figcaption></figure>
-          <figure class="gal unmask" data-delay="2" data-cursor="view"><img src="assets/img/vallora-09.jpg" alt="Phase 01 launch frame" loading="lazy"><figcaption><span>05</span> Released in phases &mdash; closed when gone</figcaption></figure>
+          <figure class="gal gal--wide unmask" data-cursor="view"><img src="assets/img/vallora-12.jpg" alt="Phase 01 tee at golden hour above the valley" loading="lazy"><figcaption><span>01</span> Fearless soul, the back says it for you</figcaption></figure>
+          <figure class="gal unmask" data-delay="1" data-cursor="view"><img src="assets/img/vallora-08.jpg" alt="Riding out in the Phase 01 tee" loading="lazy"><figcaption><span>02</span> Worldwide mobility, made to travel</figcaption></figure>
+          <figure class="gal unmask" data-delay="2" data-cursor="view"><img src="assets/img/vallora-05.jpg" alt="Phase 01 campaign frame at sunset" loading="lazy"><figcaption><span>03</span> Shot where the clothes live, no studio</figcaption></figure>
+          <figure class="gal gal--crop-left unmask" data-delay="1" data-cursor="view"><img src="assets/img/vallora-10.jpg" alt="Phase 01 tee on the steps at dusk" loading="lazy"><figcaption><span>04</span> Worn in from day one, not the mirror</figcaption></figure>
+          <figure class="gal unmask" data-delay="2" data-cursor="view"><img src="assets/img/vallora-09.jpg" alt="Phase 01 launch frame" loading="lazy"><figcaption><span>05</span> Released in phases, closed when gone</figcaption></figure>
 
           <div class="rail__end">
             <p class="eyebrow">End of Phase 01</p>
@@ -313,69 +410,74 @@
         </div>
 
         <div class="rail__hud" aria-hidden="true">
-          <span class="rail__hud-title">Lookbook</span>
+          <span class="rail__hud-title">Lookbook . drag or scroll</span>
           <span class="rail__hud-count"><em id="railIdx">01</em> / 05</span>
         </div>
 
         <div class="rail__bar" aria-hidden="true"><span id="railBar"></span></div>
       </div>
     </div>
-
-    <div class="wrap">
-      <p class="gallery__note reveal">
-        More on <a href="https://www.instagram.com/vallorawear/" target="_blank" rel="noopener">@vallorawear</a>.
-      </p>
-    </div>
   </section>
 
-  <!-- ─ ethos ─ -->
-  <section class="section ethos" id="ethos">
-    <div class="wrap ethos__inner">
-      <p class="eyebrow reveal"><span class="idx">03</span> Ethos</p>
-      <blockquote class="ethos__quote" data-split="lines">
-        Not just clothing.<br><span>A mindset.</span>
-      </blockquote>
-      <div class="ethos__cols">
-        <div class="reveal" data-delay="2">
-          <h4>Fearless soul</h4>
-          <p>The print is a reminder, not a slogan. It sits on your back because it is the part of you other people see when you keep going.</p>
-        </div>
-        <div class="reveal" data-delay="3">
-          <h4>Worldwide mobility</h4>
-          <p>Made to travel. Light enough for heat, heavy enough to hold its shape after the hundredth wash.</p>
-        </div>
-        <div class="reveal" data-delay="4">
-          <h4>Released in phases</h4>
-          <p>No endless catalogue. Small, deliberate drops, each one closed before the next begins.</p>
-        </div>
-      </div>
+  <!-- ─ ethos ─
+       Three panels that stack as you scroll. Each is sticky at a slightly
+       lower offset than the last, so the previous one stays visible behind
+       it, which is the whole trick. Falls back to a plain stack on mobile. -->
+  <section class="ethos" id="ethos">
+    <div class="wrap">
+      <header class="ethos__head">
+        <p class="eyebrow reveal"><span class="idx">03</span> Ethos</p>
+        <h2 class="display" data-split="lines">NOT JUST CLOTHING.<br><span class="hl">A MINDSET.</span></h2>
+      </header>
+    </div>
+
+    <div class="stack">
+      <article class="stack__card" style="--i:0">
+        <span class="stack__no">01</span>
+        <h3>Fearless soul</h3>
+        <p>The print is a reminder, not a slogan. It sits on your back because it is
+          the part of you other people see when you keep going.</p>
+      </article>
+      <article class="stack__card" style="--i:1">
+        <span class="stack__no">02</span>
+        <h3>Worldwide mobility</h3>
+        <p>Made to travel. Light enough for heat, heavy enough to hold its shape
+          after the hundredth wash.</p>
+      </article>
+      <article class="stack__card" style="--i:2">
+        <span class="stack__no">03</span>
+        <h3>Released in phases</h3>
+        <p>No endless catalogue. Small, deliberate drops, each one closed before
+          the next begins.</p>
+      </article>
     </div>
   </section>
 
   <!-- ─ contact ─
-       Sits directly under the ethos, per the client's note: WhatsApp and
-       Instagram. TODO: the WhatsApp number is a PLACEHOLDER — replace
-       000000000000 in BOTH links below (here and in the footer) with the
-       real number in international format, digits only. -->
-  <section class="section contact" id="contact">
+       TODO: the WhatsApp number is a PLACEHOLDER. Replace 000000000000 in
+       BOTH links (here and in the footer) with the real number in
+       international format, digits only. main.js reads the number straight
+       off these hrefs, so nothing else needs touching. -->
+  <section class="contact" id="contact">
     <div class="wrap contact__inner">
       <p class="eyebrow reveal"><span class="idx">04</span> Contact</p>
-      <h2 class="h2" data-split="lines">Talk to us.</h2>
-      <p class="lede reveal" data-delay="2">Orders, sizing, anything at all &mdash; the DMs are open.</p>
+      <h2 class="display" data-split="lines">TALK TO US</h2>
+      <p class="lede reveal" data-delay="2">Orders, sizing, anything at all. The DMs are open,
+        and there is a person on the other end.</p>
       <div class="contact__actions reveal" data-delay="3">
-        <a class="btn magnetic contact__wa" href="https://wa.me/000000000000" target="_blank" rel="noopener">WhatsApp</a>
+        <a class="btn btn--solid magnetic" href="https://wa.me/000000000000" target="_blank" rel="noopener">WhatsApp</a>
         <a class="btn btn--ghost magnetic" href="https://www.instagram.com/vallorawear/" target="_blank" rel="noopener">Instagram</a>
       </div>
-      <p class="note reveal" data-delay="4">@vallorawear &mdash; everywhere.</p>
+      <p class="contact__handle reveal" data-delay="4">@vallorawear, everywhere</p>
     </div>
   </section>
 
   <!-- ─ feedback ─
-       HIDDEN FOR LAUNCH. The markup below is finished and styled, it is only
-       waiting on real quotes, which live in the brand's "Feedbacks" Instagram
-       highlight behind the login wall. To bring the section back: uncomment
-       this block, swap the three placeholders for genuine quotes, and drop the
-       `is-placeholder` class from each figure. Do not ship invented reviews.
+       HIDDEN FOR LAUNCH. The markup is finished and styled, it is only waiting
+       on real quotes, which live in the brand's "Feedbacks" Instagram highlight
+       behind the login wall. To bring it back: uncomment, swap the three
+       placeholders for genuine quotes, drop the `is-placeholder` class. Do not
+       ship invented reviews.
 
   <section class="section feedback">
     <div class="wrap">
@@ -393,15 +495,15 @@
   -->
 
   <!-- ─ phase 02 ─ -->
-  <section class="phase02" id="phase02">
-    <div class="phase02__media" data-parallax="0.2">
+  <section class="next" id="next">
+    <div class="next__media" data-parallax="0.18">
       <img src="assets/img/vallora-03.jpg" alt="" aria-hidden="true" loading="lazy">
     </div>
-    <div class="phase02__scrim"></div>
-    <div class="phase02__body">
+    <div class="next__scrim"></div>
+    <div class="next__body">
       <p class="eyebrow reveal"><span class="idx">05</span> Next</p>
-      <h2 class="phase02__title" data-split="chars" data-delay="80">PHASE 02</h2>
-      <p class="phase02__sub reveal" data-delay="4">Coming 2026</p>
+      <h2 class="next__title" data-split="chars" data-delay="80">PHASE 02</h2>
+      <p class="next__sub reveal" data-delay="4">Coming 2026</p>
       <a class="btn btn--ghost magnetic reveal" data-delay="5" href="https://www.instagram.com/vallorawear/" target="_blank" rel="noopener">
         Follow for the drop
       </a>
@@ -411,24 +513,64 @@
 </main>
 
 <footer class="footer">
-  <div class="wrap footer__inner">
-    <div class="footer__brand">
-      <p class="wordmark wordmark--sm">VALLORA</p>
-      <p class="footer__tag">Not just clothing, a mindset.</p>
+  <div class="wrap">
+    <div class="footer__top">
+      <div class="footer__col">
+        <p class="footer__label">Index</p>
+        <nav class="footer__nav" aria-label="Footer">
+          <a href="#shop">Shop</a>
+          <a href="#lookbook">Lookbook</a>
+          <a href="#ethos">Ethos</a>
+          <a href="#contact">Contact</a>
+        </nav>
+      </div>
+      <div class="footer__col">
+        <p class="footer__label">Order</p>
+        <nav class="footer__nav" aria-label="Order">
+          <a href="https://wa.me/000000000000" target="_blank" rel="noopener">WhatsApp</a>
+          <a href="https://www.instagram.com/vallorawear/" target="_blank" rel="noopener">Instagram</a>
+        </nav>
+      </div>
+      <div class="footer__col footer__col--wide">
+        <p class="footer__label">Studio</p>
+        <p class="footer__note">Amman, Jordan . <span id="clock">--:--</span> local</p>
+        <p class="footer__note footer__note--dim">Not just clothing, a mindset.</p>
+      </div>
     </div>
+  </div>
 
-    <nav class="footer__nav" aria-label="Footer">
-      <a href="#shop">Shop</a>
-      <a href="#lookbook">Lookbook</a>
-      <a href="#ethos">Ethos</a>
-      <a href="#contact">Contact</a>
-      <a href="https://wa.me/000000000000" target="_blank" rel="noopener">WhatsApp</a>
-      <a href="https://www.instagram.com/vallorawear/" target="_blank" rel="noopener">Instagram</a>
-    </nav>
+  <!-- the wordmark is the sign-off, sized against the viewport so it always
+       runs edge to edge -->
+  <div class="footer__mark" aria-hidden="true"><span>VALLORA</span></div>
 
-    <p class="footer__legal">&copy; <span id="year">2026</span> Vallora. All rights reserved.</p>
+  <div class="wrap">
+    <p class="footer__legal">
+      <span>&copy; <span id="year">2026</span> Vallora</span>
+      <span>All rights reserved</span>
+    </p>
   </div>
 </footer>
+
+<!-- ─ product overlay ─
+     Empty on purpose. main.js moves a card's panel in here on open and puts
+     it back on close, so the markup above stays the single source of truth. -->
+<div class="pv" id="pv" hidden>
+  <div class="pv__scrim" data-pv-close></div>
+  <div class="pv__sheet" role="dialog" aria-modal="true" aria-labelledby="pvName">
+    <button class="pv__close" type="button" data-pv-close aria-label="Close">
+      <span></span><span></span>
+    </button>
+    <!-- no src attribute: an empty one is not "no image", it is a request for
+         the page's own URL, which then decodes as a broken image -->
+    <div class="pv__media"><img id="pvImg" alt=""></div>
+    <div class="pv__body">
+      <p class="pv__eyebrow" id="pvBadge">Phase 01</p>
+      <h2 class="pv__name" id="pvName">Product</h2>
+      <p class="pv__price" id="pvPrice">Price over DM</p>
+      <div class="pv__slot" id="pvSlot"></div>
+    </div>
+  </div>
+</div>
 
 <script src="assets/js/main.js"></script>
 </body>

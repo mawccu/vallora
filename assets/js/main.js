@@ -1,9 +1,20 @@
-/* VALLORA */
+/* VALLORA
+   ------------------------------------------------------------------
+   Everything here is an enhancement. The page is readable, orderable
+   and navigable with this file blocked: the head watchdog strips the
+   `js` class, which turns every hidden-until-revealed state back off,
+   shows the native <details> under each product card and hides the
+   loader. Nothing below may become the only way to reach content. */
+
 (function () {
   'use strict';
 
   var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+  var doc = document;
+  var $ = function (sel, ctx) { return (ctx || doc).querySelector(sel); };
+  var $$ = function (sel, ctx) { return [].slice.call((ctx || doc).querySelectorAll(sel)); };
 
   /* ── split text ──────────────────────────────────────────
      Wraps each visual line (or character) in an overflow-hidden
@@ -30,31 +41,47 @@
   }
 
   if (!reduced) {
-    document.querySelectorAll('[data-split]').forEach(function (el) {
+    $$('[data-split]').forEach(function (el) {
       var base = parseInt(el.getAttribute('data-delay') || '0', 10);
       if (el.getAttribute('data-split') === 'chars') {
         splitChars(el, 34);
         // shift the whole run by the element's own delay
-        el.querySelectorAll('.char').forEach(function (c) {
+        $$('.char', el).forEach(function (c) {
           c.style.setProperty('--d', parseInt(c.style.getPropertyValue('--d'), 10) + base);
         });
       } else {
         splitLines(el);
-        el.querySelectorAll('.line__inner').forEach(function (l, i) {
+        $$('.line__inner', el).forEach(function (l, i) {
           l.style.setProperty('--d', base + i * 110);
         });
       }
     });
   }
 
+  /* ── manifesto: one word per span ─────────────────────────
+     Built here rather than in the markup so the copy stays
+     editable as a plain sentence, and so a dead script leaves
+     ordinary paragraph text behind. */
+
+  var words = [];
+  var manifesto = $('[data-words]');
+
+  if (manifesto && !reduced) {
+    var src = manifesto.textContent.trim().split(/\s+/);
+    manifesto.innerHTML = src.map(function (w) {
+      return '<span class="w">' + w + '</span>';
+    }).join(' ');
+    words = $$('.w', manifesto);
+  }
+
   /* ── reveal on scroll ────────────────────────────────── */
 
-  document.querySelectorAll('.reveal, .unmask').forEach(function (el) {
+  $$('.reveal, .unmask').forEach(function (el) {
     var d = el.getAttribute('data-delay');
     if (d) el.style.setProperty('--d', d);
   });
 
-  var watched = [].slice.call(document.querySelectorAll('.reveal, .unmask, [data-split]'));
+  var watched = $$('.reveal, .unmask, [data-split]');
 
   // Anything not yet revealed. The scroll loop sweeps this by plain geometry,
   // which is immune to whatever the observer does or does not report.
@@ -91,48 +118,109 @@
     }
   }
 
-  /* ── intro ───────────────────────────────────────────────
-     Once per tab. Anything that fails here must not be able to
-     leave the curtain up, hence the belt-and-braces timeout. */
+  /* ── loader ───────────────────────────────────────────────
+     The percentage is real: it counts campaign frames that have
+     actually decoded. Two independent timeouts lift the curtain
+     no matter what the counter says, because a curtain that can
+     stick is a blank site. */
 
-  var intro = document.querySelector('.intro');
+  var loader = $('#loader');
+  var loaderPct = $('#loaderPct');
+  var loaderBar = $('#loaderBar');
+  var heroMask = $('.hero__mask');
+  var lifted = false;
 
-  function runIntro() {
-    if (reduced || !intro || sessionStorage.getItem('vallora.seen')) return;
+  function openHero() {
+    if (heroMask) heroMask.classList.add('is-open');
+  }
 
-    sessionStorage.setItem('vallora.seen', '1');
-    intro.classList.add('is-armed');
-    document.body.style.overflow = 'hidden';
+  function lift() {
+    if (lifted) return;
+    lifted = true;
+    doc.body.style.overflow = '';
 
-    var done = function () {
-      intro.classList.add('is-out');
-      document.body.style.overflow = '';
-      setTimeout(function () { intro.classList.remove('is-armed'); }, 1100);
-    };
+    if (!loader) { openHero(); return; }
 
-    requestAnimationFrame(function () {
-      requestAnimationFrame(function () { intro.classList.add('is-in'); });
+    loader.classList.add('is-out');
+    openHero();
+    setTimeout(function () { loader.classList.add('is-done'); }, 1200);
+  }
+
+  if (reduced || !loader) {
+    openHero();
+  } else {
+    doc.body.style.overflow = 'hidden';
+
+    var imgs = $$('img').filter(function (im) { return !im.loading || im.loading !== 'lazy'; });
+    // nothing eager to wait on would make the bar jump straight to 100, so
+    // fall back to the whole set
+    if (!imgs.length) imgs = $$('img');
+
+    var total = Math.max(1, imgs.length);
+    var done = 0;
+    var shown = 0;
+
+    function tick() {
+      done++;
+      if (done >= total) setTimeout(lift, 420);
+    }
+
+    imgs.forEach(function (im) {
+      if (im.complete) { tick(); return; }
+      im.addEventListener('load', tick, { once: true });
+      im.addEventListener('error', tick, { once: true });
     });
-    setTimeout(done, 1650);
+
+    // the readout eases toward the real figure instead of stepping, so a fast
+    // cache hit still reads as a count rather than a flash
+    (function count() {
+      var target = (done / total) * 100;
+      shown += (target - shown) * 0.12;
+      if (target - shown < 0.6) shown = target;
+
+      var n = Math.min(100, Math.round(shown));
+      if (loaderPct) loaderPct.textContent = n < 10 ? '00' + n : n < 100 ? '0' + n : '100';
+      if (loaderBar) loaderBar.style.transform = 'scaleX(' + (shown / 100).toFixed(3) + ')';
+
+      if (!lifted) requestAnimationFrame(count);
+    })();
+
+    // belt, and braces
+    setTimeout(lift, 4200);
+    setTimeout(function () {
+      if (loader) { loader.classList.add('is-out', 'is-done'); }
+      doc.body.style.overflow = '';
+      openHero();
+    }, 7000);
   }
 
-  try { runIntro(); } catch (e) {
-    if (intro) intro.classList.remove('is-armed');
-    document.body.style.overflow = '';
+  /* ── hero slideshow ──────────────────────────────────────
+     Slow crossfade between campaign frames. No transform, no
+     filter: the frames are left exactly as shot. */
+
+  var slides = $$('.hero__slide');
+  if (slides.length > 1 && !reduced) {
+    var si = 0;
+    setInterval(function () {
+      if (doc.hidden) return;
+      slides[si].classList.remove('is-on');
+      si = (si + 1) % slides.length;
+      slides[si].classList.add('is-on');
+    }, 6200);
   }
 
-  /* ── scroll driven: nav, progress, parallax ──────────── */
+  /* ── scroll driven: nav, progress, parallax, rail, words ── */
 
-  var nav = document.getElementById('nav');
-  var bar = document.querySelector('.progress span');
-  var parallax = [].slice.call(document.querySelectorAll('[data-parallax]'));
-  var marqueeTrack = document.querySelector('.marquee__track');
+  var nav = $('#nav');
+  var bar = $('.progress span');
+  var parallax = $$('[data-parallax]');
+  var marqueeTrack = $('.marquee__track');
 
-  var rail = document.getElementById('rail');
-  var railTrack = document.getElementById('railTrack');
-  var railBar = document.getElementById('railBar');
-  var railIdx = document.getElementById('railIdx');
-  var railCount = railTrack ? railTrack.querySelectorAll('.gal').length : 0;
+  var rail = $('#rail');
+  var railTrack = $('#railTrack');
+  var railBar = $('#railBar');
+  var railIdx = $('#railIdx');
+  var railCount = railTrack ? $$('.gal', railTrack).length : 0;
   var railRange = 0;
 
   // How far the track has to travel: its full width minus one viewport.
@@ -148,7 +236,23 @@
   var ticking = false;
 
   function limit() {
-    return Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+    return Math.max(1, doc.documentElement.scrollHeight - window.innerHeight);
+  }
+
+  function lightWords() {
+    if (!words.length || !manifesto) return;
+    var r = manifesto.getBoundingClientRect();
+    var vh = window.innerHeight;
+    // 0 when the block's top sits at 78% of the viewport, 1 once its bottom
+    // has climbed past 45%
+    var span = Math.max(1, (r.height + vh * 0.33));
+    var p = (vh * 0.78 - r.top) / span;
+    p = Math.max(0, Math.min(1, p));
+
+    var lit = Math.round(p * words.length);
+    for (var i = 0; i < words.length; i++) {
+      words[i].classList.toggle('is-lit', i < lit);
+    }
   }
 
   function frame() {
@@ -162,6 +266,7 @@
     if (bar) bar.style.transform = 'scaleX(' + (y / limit()).toFixed(4) + ')';
 
     sweep();
+    lightWords();
 
     if (!reduced) {
       for (var i = 0; i < parallax.length; i++) {
@@ -209,7 +314,7 @@
 
   // lazy images settle after the observer fires, which changes the track width
   if (railTrack) {
-    railTrack.querySelectorAll('img').forEach(function (im) {
+    $$('img', railTrack).forEach(function (im) {
       im.addEventListener('load', function () { measureRail(); onScroll(); }, { once: true });
     });
   }
@@ -217,7 +322,47 @@
   measureRail();
   frame();
 
-  /* marquee: constant drift, pushed along by scroll velocity */
+  /* ── rail: drag to explore ───────────────────────────────
+     The track's position is derived from scroll, so a horizontal
+     drag is translated back into a vertical scroll rather than
+     fighting it. One source of truth for where the rail is. */
+
+  if (rail && fine) {
+    var dragging = false;
+    var startX = 0;
+
+    rail.addEventListener('pointerdown', function (e) {
+      if (railRange <= 0 || e.button !== 0) return;
+      dragging = true;
+      startX = e.clientX;
+      rail.classList.add('is-dragging');
+      rail.setPointerCapture(e.pointerId);
+    });
+
+    rail.addEventListener('pointermove', function (e) {
+      if (!dragging || railRange <= 0) return;
+      var dx = e.clientX - startX;
+      startX = e.clientX;
+      var travel = Math.max(1, rail.getBoundingClientRect().height - window.innerHeight);
+      window.scrollBy(0, -dx * (travel / railRange));
+    });
+
+    var endDrag = function (e) {
+      if (!dragging) return;
+      dragging = false;
+      rail.classList.remove('is-dragging');
+      try { rail.releasePointerCapture(e.pointerId); } catch (err) { /* already gone */ }
+    };
+    rail.addEventListener('pointerup', endDrag);
+    rail.addEventListener('pointercancel', endDrag);
+
+    // a drag that ends on an image would otherwise fire the browser's own
+    // drag-and-drop, which cancels the pointer stream mid-gesture
+    $$('img', rail).forEach(function (im) { im.draggable = false; });
+  }
+
+  /* ── ticker: constant drift, pushed by scroll velocity ─── */
+
   if (marqueeTrack && !reduced) {
     marqueeTrack.style.animation = 'none';   // taking over from the CSS drift
     var half = 0;
@@ -238,13 +383,155 @@
     })();
   }
 
+  /* ══════════════════════════════════════════════════════════
+     PRODUCT OVERLAY
+     The card's panel is the single source of truth. Opening a
+     product MOVES that node into the overlay and closing puts it
+     back, so there is never a second copy of a size chart to fall
+     out of date with the first.
+     ══════════════════════════════════════════════════════════ */
+
+  var pv = $('#pv');
+  var pvSlot = $('#pvSlot');
+  var pvImg = $('#pvImg');
+  var pvName = $('#pvName');
+  var pvPrice = $('#pvPrice');
+  var pvBadge = $('#pvBadge');
+  var pvClose = $('.pv__close');
+
+  var openPanel = null;   // the node currently borrowed from a card
+  var panelHome = null;   // where to put it back
+  var opener = null;      // what to return focus to
+
+  function waNumber(a) {
+    // the number lives in the markup, never duplicated here, so replacing the
+    // placeholder in index.html is the only edit needed
+    var m = (a.getAttribute('href') || '').match(/wa\.me\/(\d+)/);
+    return m ? m[1] : null;
+  }
+
+  function orderText(card, size) {
+    var name = card.getAttribute('data-product') || 'a piece';
+    var colour = card.getAttribute('data-colour');
+    return 'Hi VALLORA, I would like the ' + name +
+           (colour ? ' in ' + colour : '') +
+           (size ? ', size ' + size : '') + '. Is it available?';
+  }
+
+  function syncOrderLink(card, panel) {
+    var wa = $('[data-order-wa]', panel);
+    if (!wa) return;
+    var num = waNumber(wa);
+    if (!num) return;
+    var on = $('.chip.is-on', panel);
+    wa.href = 'https://wa.me/' + num + '?text=' +
+              encodeURIComponent(orderText(card, on ? on.getAttribute('data-size') : ''));
+  }
+
+  function openPV(card) {
+    if (!pv || !pvSlot) return;
+
+    var panel = $('[data-panel]', card);
+    if (!panel) return;
+
+    panelHome = panel.parentNode;
+    openPanel = panel;
+    pvSlot.appendChild(panel);
+    syncOrderLink(card, panel);
+    pvSlot.setAttribute('data-for', card.getAttribute('data-product') || '');
+
+    var img = $('.card__img', card);
+    var name = $('.card__name', card);
+    var price = $('.card__price', card);
+    var badge = $('.card__badge', card);
+
+    if (pvImg && img) { pvImg.src = img.currentSrc || img.src; pvImg.alt = img.alt || ''; }
+    if (pvName && name) pvName.textContent = name.textContent.trim();
+    if (pvPrice && price) pvPrice.textContent = price.textContent.trim();
+    if (pvBadge) pvBadge.textContent = badge ? badge.textContent.trim() : 'Vallora';
+
+    pv.hidden = false;
+    doc.body.classList.add('is-locked');
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () { pv.classList.add('is-open'); });
+    });
+
+    if (pvClose) pvClose.focus();
+  }
+
+  function closePV() {
+    if (!pv || pv.hidden) return;
+    pv.classList.remove('is-open');
+    doc.body.classList.remove('is-locked');
+
+    var finish = function () {
+      if (openPanel && panelHome) panelHome.appendChild(openPanel);
+      openPanel = null;
+      panelHome = null;
+      pv.hidden = true;
+      if (opener) { opener.focus(); opener = null; }
+    };
+
+    // the sheet transition is .7s; the timeout is the fallback for a hidden
+    // tab, where transitions do not run at all
+    var sheet = $('.pv__sheet', pv);
+    var settled = false;
+    var once = function () { if (!settled) { settled = true; finish(); } };
+    if (sheet) sheet.addEventListener('transitionend', once, { once: true });
+    setTimeout(once, 800);
+  }
+
+  $$('.card').forEach(function (card) {
+    var media = $('.card__media', card);
+    if (!media) return;
+    media.addEventListener('click', function (e) {
+      e.preventDefault();
+      opener = $('.card__open', card) || media;
+      openPV(card);
+    });
+  });
+
+  if (pv) {
+    $$('[data-pv-close]', pv).forEach(function (el) {
+      el.addEventListener('click', closePV);
+    });
+
+    // size chips live inside the borrowed panel, so the listener has to be
+    // delegated from the slot rather than bound per chip
+    pvSlot.addEventListener('click', function (e) {
+      var chip = e.target.closest ? e.target.closest('.chip') : null;
+      if (!chip) return;
+      var group = chip.parentNode;
+      $$('.chip', group).forEach(function (c) { c.classList.toggle('is-on', c === chip); });
+
+      var card = $$('.card').filter(function (c) {
+        return (c.getAttribute('data-product') || '') === pvSlot.getAttribute('data-for');
+      })[0];
+      if (card && openPanel) syncOrderLink(card, openPanel);
+    });
+
+    doc.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && !pv.hidden) closePV();
+
+      // a modal that lets focus wander behind it is not a modal
+      if (e.key === 'Tab' && !pv.hidden) {
+        var f = $$('a[href], button, [tabindex]:not([tabindex="-1"])', pv)
+          .filter(function (el) { return el.offsetParent !== null; });
+        if (!f.length) return;
+        var first = f[0], last = f[f.length - 1];
+        if (e.shiftKey && doc.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && doc.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+    });
+  }
+
   /* ── custom cursor ───────────────────────────────────── */
 
   if (fine && !reduced) {
-    var cur = document.querySelector('.cursor');
-    var dot = cur.querySelector('.cursor__dot');
-    var ring = cur.querySelector('.cursor__ring');
-    var label = cur.querySelector('.cursor__label');
+    var cur = $('.cursor');
+    var dot = $('.cursor__dot', cur);
+    var ring = $('.cursor__ring', cur);
+    var label = $('.cursor__label', cur);
 
     var mx = window.innerWidth / 2, my = window.innerHeight / 2;
     var rx = mx, ry = my;
@@ -267,10 +554,12 @@
       requestAnimationFrame(ringLoop);
     })();
 
-    document.querySelectorAll('a, button, [data-cursor]').forEach(function (el) {
+    var LABELS = { view: 'Drag', open: 'Open' };
+
+    $$('a, button, [data-cursor]').forEach(function (el) {
       var mode = el.getAttribute('data-cursor');
       el.addEventListener('mouseenter', function () {
-        if (mode === 'view') { cur.classList.add('is-view'); label.textContent = 'View'; }
+        if (mode && LABELS[mode]) { cur.classList.add('is-view'); label.textContent = LABELS[mode]; }
         else cur.classList.add('is-hover');
       });
       el.addEventListener('mouseleave', function () {
@@ -282,12 +571,12 @@
   /* ── magnetic buttons ────────────────────────────────── */
 
   if (fine && !reduced) {
-    document.querySelectorAll('.magnetic').forEach(function (el) {
+    $$('.magnetic').forEach(function (el) {
       el.addEventListener('mousemove', function (e) {
         var r = el.getBoundingClientRect();
         var x = e.clientX - (r.left + r.width / 2);
         var y = e.clientY - (r.top + r.height / 2);
-        el.style.transform = 'translate(' + x * 0.22 + 'px,' + y * 0.3 + 'px)';
+        el.style.transform = 'translate(' + x * 0.2 + 'px,' + y * 0.28 + 'px)';
       });
       el.addEventListener('mouseleave', function () {
         el.style.transition = 'transform .5s cubic-bezier(.22,.61,.36,1)';
@@ -299,19 +588,19 @@
 
   /* ── nav link roll ───────────────────────────────────── */
 
-  document.querySelectorAll('.nav__links a span').forEach(function (s) {
+  $$('.nav__links a span').forEach(function (s) {
     s.setAttribute('data-label', s.textContent);
     s.style.position = 'relative';
   });
 
   /* ── mobile menu ─────────────────────────────────────── */
 
-  var burger = document.getElementById('burger');
-  var menu = document.getElementById('mobileMenu');
+  var burger = $('#burger');
+  var menu = $('#mobileMenu');
 
   function setMenu(open) {
     burger.setAttribute('aria-expanded', String(open));
-    document.body.style.overflow = open ? 'hidden' : '';
+    doc.body.classList.toggle('is-locked', open);
 
     if (open) {
       menu.hidden = false;
@@ -319,7 +608,8 @@
       requestAnimationFrame(function () { menu.classList.add('is-open'); });
     } else {
       menu.classList.remove('is-open');
-      var done = function () { menu.hidden = true; };
+      var settled = false;
+      var done = function () { if (settled) return; settled = true; menu.hidden = true; };
       menu.addEventListener('transitionend', done, { once: true });
       // fallback in case the transition never fires (reduced motion, hidden tab)
       setTimeout(done, 450);
@@ -331,10 +621,10 @@
   });
 
   menu.addEventListener('click', function (e) {
-    if (e.target.tagName === 'A') setMenu(false);
+    if (e.target.tagName === 'A' || e.target.parentNode.tagName === 'A') setMenu(false);
   });
 
-  document.addEventListener('keydown', function (e) {
+  doc.addEventListener('keydown', function (e) {
     if (e.key === 'Escape' && burger.getAttribute('aria-expanded') === 'true') {
       setMenu(false);
       burger.focus();
@@ -350,7 +640,45 @@
 
   /* ── misc ────────────────────────────────────────────── */
 
-  document.getElementById('year').textContent = new Date().getFullYear();
+  var year = $('#year');
+  if (year) year.textContent = new Date().getFullYear();
+
+  /* The footer wordmark has to run edge to edge on any viewport, and no vw
+     value does that across font loads and breakpoints. Measure the glyphs at a
+     known size, then scale to the line. Re-run once the webfont lands, since
+     the fallback metrics are not the real ones. */
+  var mark = $('.footer__mark');
+  var markText = mark ? $('span', mark) : null;
+
+  function fitMark() {
+    if (!mark || !markText) return;
+    var box = mark.clientWidth -
+      parseFloat(getComputedStyle(mark).paddingLeft) -
+      parseFloat(getComputedStyle(mark).paddingRight);
+    if (box <= 0) return;
+    markText.style.fontSize = '100px';
+    var w = markText.getBoundingClientRect().width;
+    if (w > 0) markText.style.fontSize = (100 * box / w).toFixed(2) + 'px';
+  }
+
+  fitMark();
+  window.addEventListener('resize', fitMark, { passive: true });
+  if (doc.fonts && doc.fonts.ready) doc.fonts.ready.then(fitMark).catch(function () { /* fallback size stands */ });
+
+  // studio time, so the footer says there is someone at the other end
+  var clock = $('#clock');
+  function tickClock() {
+    if (!clock) return;
+    try {
+      clock.textContent = new Intl.DateTimeFormat('en-GB', {
+        timeZone: 'Asia/Amman', hour: '2-digit', minute: '2-digit'
+      }).format(new Date());
+    } catch (e) {
+      clock.textContent = new Date().toTimeString().slice(0, 5);
+    }
+  }
+  tickClock();
+  setInterval(tickClock, 30000);
 
   // tells the head watchdog that enhancement succeeded, so it leaves `js` on
   window.__valloraReady = true;
