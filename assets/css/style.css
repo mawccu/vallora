@@ -442,6 +442,16 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 }
 .hero__tag em{font-style:normal;color:var(--paper)}
 
+/* drop title under the wordmark, in the spirit of the reference site */
+.hero__drop{
+  margin:0 auto 2.6rem;
+  font-size:clamp(.72rem,1.6vw,.92rem);
+  font-weight:400;
+  letter-spacing:var(--track-lg);
+  text-transform:uppercase;
+  color:var(--paper);
+}
+
 .hero__actions{
   display:flex;
   flex-wrap:wrap;
@@ -585,6 +595,162 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   color:var(--paper-dim);
 }
 .specs dd{margin:0;font-size:.9rem;text-align:right}
+
+/* ── shop ───────────────────────────────────────────────── */
+
+.shop__grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:clamp(1.6rem,4vw,3.5rem) clamp(1rem,2.4vw,2rem);
+  align-items:start;   /* an open details panel must not stretch its neighbour */
+}
+
+.shop-card{position:relative}
+
+.shop-card__media{
+  display:block;
+  aspect-ratio:4/5;
+  overflow:hidden;
+  background:linear-gradient(150deg,var(--ink-3),var(--ink-2));
+}
+.shop-card__media img{
+  width:100%;height:100%;
+  object-fit:cover;
+  transition:transform 1.2s var(--ease);
+}
+.shop-card:hover .shop-card__media img{transform:scale(1.05)}
+
+.shop-card__row{
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  gap:1rem;
+  margin-top:1.1rem;
+}
+.shop-card__name{
+  margin:0;
+  font-size:.78rem;
+  font-weight:400;
+  letter-spacing:var(--track-md);
+  text-transform:uppercase;
+}
+.shop-card__price{
+  margin:0;
+  flex:none;
+  font-size:.7rem;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  color:var(--paper-dim);
+}
+.shop-card__tbc{
+  margin:.5rem 0 0;
+  font-size:.78rem;
+  color:var(--paper-dim);
+}
+
+/* placeholder cards: dashed, per the repo convention, so they cannot ship
+   unnoticed with fake names on them */
+.shop-card--placeholder .shop-card__media{outline:1px dashed rgba(236,232,225,.3);outline-offset:-1px}
+.shop-card--placeholder .shop-card__name{color:var(--paper-dim)}
+
+.specs--card{margin:1.2rem 0 0;font-size:.9em}
+.specs--card>div{padding:.7rem 0}
+
+/* native <details>: works with scripting off */
+.shop-card__more{margin-top:1rem;border-top:1px solid var(--line)}
+.shop-card__more summary{
+  list-style:none;
+  cursor:pointer;
+  padding:.9rem 0;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:1rem;
+  font-size:.66rem;
+  letter-spacing:var(--track-md);
+  text-transform:uppercase;
+  color:var(--paper-dim);
+  transition:color .35s var(--ease);
+}
+.shop-card__more summary::-webkit-details-marker{display:none}
+.shop-card__more summary::after{
+  content:"+";
+  font-size:.9rem;
+  color:var(--ember);
+  transition:transform .4s var(--ease);
+}
+.shop-card__more[open] summary::after{transform:rotate(45deg)}
+.shop-card__more summary:hover{color:var(--paper)}
+
+.shop-card__panel{padding:.4rem 0 1.6rem}
+.shop-card__panel .note{margin:.7rem 0 1.4rem}
+.shop-card__panel .btn--sm{margin-top:.4rem}
+.shop-card__panel .quote{padding:1.3rem 1.2rem}
+.shop-card__panel .quote blockquote{font-size:.9rem;margin-bottom:.9rem}
+
+.panel__label{
+  margin:1.6rem 0 .8rem;
+  font-size:.66rem;
+  font-weight:500;
+  letter-spacing:var(--track-md);
+  text-transform:uppercase;
+}
+.panel__label:first-child{margin-top:.4rem}
+.panel__label em{font-style:normal;font-weight:300;color:var(--paper-dim);text-transform:none;letter-spacing:.02em}
+
+.sizes{
+  width:100%;
+  border-collapse:collapse;
+  font-size:.82rem;
+}
+.sizes th{
+  font-size:.62rem;
+  font-weight:400;
+  letter-spacing:var(--track-md);
+  text-transform:uppercase;
+  color:var(--paper-dim);
+  text-align:left;
+  padding:.5rem .6rem .5rem 0;
+  border-bottom:1px solid var(--line);
+}
+.sizes td{
+  padding:.55rem .6rem .55rem 0;
+  border-bottom:1px solid var(--line);
+}
+/* measurements are unconfirmed: dashed flag, same convention as quotes */
+.sizes.is-placeholder{border:1px dashed rgba(236,232,225,.3);opacity:.75}
+.sizes.is-placeholder td,.sizes.is-placeholder th{padding-left:.6rem}
+
+.care{
+  margin:0;padding:0;
+  list-style:none;
+}
+.care li{
+  padding:.55rem 0 .55rem 1.1rem;
+  position:relative;
+  font-size:.86rem;
+  color:var(--paper-dim);
+  border-bottom:1px solid var(--line);
+}
+.care li::before{
+  content:"";
+  position:absolute;left:0;top:1.05em;
+  width:4px;height:4px;
+  background:var(--ember);
+}
+
+/* ── contact ────────────────────────────────────────────── */
+
+.contact__inner{text-align:center}
+.contact__inner .lede{margin-inline:auto}
+.contact__actions{
+  margin-top:2.2rem;
+  display:flex;
+  flex-wrap:wrap;
+  gap:1rem;
+  justify-content:center;
+}
+.contact__inner .note{margin-top:1.6rem}
 
 /* ── detail strip ───────────────────────────────────────── */
 
@@ -730,23 +896,23 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
    left so a portrait tile lands on the subject and drops the overlay. */
 .gal--crop-left img{object-position:35% center}
 
+/* Captions are always on, pinned bottom-left — one line of brand meaning per
+   frame, per the client's reference. (They used to be hover-only.) */
 .gal figcaption{
   position:absolute;
   left:0;right:0;bottom:0;
   padding:1.6rem 1.3rem 1.1rem;
   display:flex;
+  justify-content:flex-start;
+  text-align:left;
   align-items:baseline;
   gap:.8rem;
   font-size:.66rem;
   letter-spacing:var(--track-md);
   text-transform:uppercase;
   background:linear-gradient(to top,rgba(5,5,5,.8),transparent);
-  opacity:0;
-  transform:translateY(10px);
-  transition:opacity .5s var(--ease),transform .5s var(--ease);
 }
 .gal figcaption span{color:var(--ember)}
-.gal:hover figcaption{opacity:1;transform:none}
 
 .gallery__note{
   margin:2.2rem 0 0;
@@ -981,8 +1147,8 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   .rail__track{grid-template-columns:repeat(2,1fr)}
   .gal--wide{grid-column:span 2}
 
-  /* captions have no hover to trigger them on touch */
-  .gal figcaption{opacity:1;transform:none}
+  /* two-up shop grid holds on tablet, like the reference site */
+  .shop__grid{gap:2rem 1rem}
 }
 
 @media (max-width:560px){
@@ -1007,6 +1173,12 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
   .rail__track{grid-template-columns:1fr}
   .gal,.gal--wide{grid-column:span 1;aspect-ratio:4/5}
+
+  /* the reference keeps two columns on phones; tighten the type to fit */
+  .shop__grid{gap:1.8rem .8rem}
+  .shop-card__row{flex-direction:column;gap:.2rem}
+  .shop-card__name{font-size:.66rem}
+  .specs--card{display:none}   /* full specs live one tap away in the details */
 
   .footer__inner{grid-template-columns:1fr}
   .footer__nav{text-align:left}

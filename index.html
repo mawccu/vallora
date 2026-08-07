@@ -57,10 +57,10 @@
     <a class="wordmark wordmark--sm" href="#top" aria-label="Vallora home">VALLORA</a>
 
     <nav class="nav__links" aria-label="Primary">
-      <a href="#phase01"><span>Phase 01</span></a>
+      <a href="#shop"><span>Shop</span></a>
       <a href="#lookbook"><span>Lookbook</span></a>
       <a href="#ethos"><span>Ethos</span></a>
-      <a href="#phase02"><span>Phase 02</span></a>
+      <a href="#contact"><span>Contact</span></a>
     </nav>
 
     <a class="btn btn--sm magnetic" href="https://www.instagram.com/vallorawear/" target="_blank" rel="noopener">
@@ -75,17 +75,21 @@
 
 <div class="mobile-menu" id="mobileMenu" hidden>
   <nav aria-label="Mobile">
-    <a href="#phase01">Phase 01</a>
+    <a href="#shop">Shop</a>
     <a href="#lookbook">Lookbook</a>
     <a href="#ethos">Ethos</a>
-    <a href="#phase02">Phase 02</a>
+    <a href="#contact">Contact</a>
     <a class="mobile-menu__cta" href="https://www.instagram.com/vallorawear/" target="_blank" rel="noopener">DM to order</a>
   </nav>
 </div>
 
 <main id="main">
 
-  <!-- ─ hero ─ -->
+  <!-- ─ hero ─
+       Landing per the client's reference (theironwilled.com): one full-bleed
+       campaign frame, the drop title, and exactly two doors in: SHOP and
+       LOOKBOOK. The brand is shooting a dedicated hero frame for this —
+       swap the img src below when it lands, nothing else has to change. -->
   <section class="hero" id="top">
     <div class="hero__media" data-parallax="0.28">
       <img src="assets/img/vallora-11.jpg" alt="" aria-hidden="true" fetchpriority="high">
@@ -95,11 +99,11 @@
     <div class="hero__body">
       <p class="eyebrow" data-split="chars">Phase 01 . Live now</p>
       <h1 class="wordmark wordmark--hero" data-split="chars" data-delay="120">VALLORA</h1>
-      <p class="hero__tag" data-split="lines" data-delay="420">Not just clothing.<br><em>A mindset.</em></p>
+      <p class="hero__drop" data-split="lines" data-delay="420">PHASE 01: FEARLESS SOUL</p>
 
       <div class="hero__actions reveal" data-delay="6">
-        <a class="btn magnetic" href="https://www.instagram.com/vallorawear/" target="_blank" rel="noopener">Order via DM</a>
-        <a class="btn btn--ghost magnetic" href="#phase01">See Phase 01</a>
+        <a class="btn magnetic" href="#shop">Shop</a>
+        <a class="btn btn--ghost magnetic" href="#lookbook">Lookbook</a>
       </div>
     </div>
 
@@ -124,42 +128,141 @@
     </div>
   </div>
 
-  <!-- ─ phase 01 ─ -->
-  <section class="section product" id="phase01">
-    <div class="wrap product__grid">
+  <!-- ─ shop ─
+       Four shirts per the brand's plan. Only the Phase 01 tee is real today;
+       the other three cards are dashed placeholders (repo convention: dashed
+       placeholders cannot ship unnoticed) waiting on names, photos and prices.
+       Each card carries its own size chart, wash care and reviews inside a
+       native <details>, so everything works with scripting off.
 
-      <div class="product__media">
-        <figure class="frame frame--tall unmask" data-parallax="0.08">
-          <img src="assets/img/vallora-04.jpg" alt="Rear view of the Phase 01 tee, Fearless Soul back print, beside a motorcycle" loading="lazy">
-        </figure>
-        <figure class="frame frame--offset unmask" data-delay="2">
-          <img src="assets/img/vallora-13.jpg" alt="Close detail of the Vallora chest mark on the Phase 01 tee" loading="lazy">
-        </figure>
+       TODO before launch:
+         1. Swap the three placeholder cards for the real shirts.
+         2. Confirm the size-chart measurements (dashed until then).
+         3. Real prices — every card currently says "Price over DM".
+         4. Real review quotes from the "Feedbacks" IG highlight. Do NOT
+            invent them (see README). -->
+  <section class="section shop" id="shop">
+    <div class="wrap">
+      <header class="section__head section__head--split">
+        <p class="eyebrow reveal"><span class="idx">01</span> Shop</p>
+        <h2 class="h2" data-split="lines">Phase 01.<br>Four shirts. That's it.</h2>
+        <p class="section__meta reveal" data-delay="3">Limited run . Closed when gone</p>
+      </header>
+
+      <div class="shop__grid">
+
+        <!-- 1 · the real one -->
+        <article class="shop-card unmask">
+          <a class="shop-card__media" href="#lookbook" data-cursor="view" aria-label="Fearless Soul tee in the lookbook">
+            <img src="assets/img/vallora-04.jpg" alt="Rear view of the Fearless Soul tee, back print set vertical, beside a motorcycle" loading="lazy">
+          </a>
+          <div class="shop-card__row">
+            <h3 class="shop-card__name">FEARLESS SOUL TEE &middot; [BLACK]</h3>
+            <p class="shop-card__price">Price over DM</p>
+          </div>
+          <dl class="specs specs--card">
+            <div><dt>Back print</dt><dd>FEARLESS SOUL, set vertical</dd></div>
+            <div><dt>Under print</dt><dd>WORLDWIDE MOBILITY</dd></div>
+            <div><dt>Cut</dt><dd>Heavy, oversized</dd></div>
+          </dl>
+          <details class="shop-card__more">
+            <summary><span>Size chart &middot; Care &middot; Reviews</span></summary>
+            <div class="shop-card__panel">
+
+              <h4 class="panel__label">Size chart <em>(cm, flat)</em></h4>
+              <table class="sizes is-placeholder">
+                <thead><tr><th>Size</th><th>Chest</th><th>Length</th><th>Sleeve</th></tr></thead>
+                <tbody>
+                  <tr><td>S</td><td>56</td><td>70</td><td>22</td></tr>
+                  <tr><td>M</td><td>58</td><td>72</td><td>23</td></tr>
+                  <tr><td>L</td><td>60</td><td>74</td><td>24</td></tr>
+                  <tr><td>XL</td><td>62</td><td>76</td><td>25</td></tr>
+                </tbody>
+              </table>
+              <p class="note">Measurements to be confirmed before launch &mdash; sizing help over DM.</p>
+
+              <h4 class="panel__label">Wash care</h4>
+              <ul class="care">
+                <li>Machine wash cold, inside out</li>
+                <li>Wash with similar colours, no bleach</li>
+                <li>Hang dry &mdash; skip the tumble dryer</li>
+                <li>Never iron the print directly</li>
+              </ul>
+
+              <h4 class="panel__label">Reviews</h4>
+              <figure class="quote is-placeholder">
+                <blockquote>Real words from the first run go here &mdash; pulled from the Feedbacks highlight, never invented.</blockquote>
+                <figcaption>Name, city</figcaption>
+              </figure>
+              <p class="note">Got one? Send your photo and your words on
+                <a href="https://www.instagram.com/vallorawear/" target="_blank" rel="noopener">Instagram</a>
+                and it goes up here.</p>
+
+              <a class="btn btn--sm magnetic" href="https://www.instagram.com/vallorawear/" target="_blank" rel="noopener">DM to order</a>
+            </div>
+          </details>
+        </article>
+
+        <!-- 2 · placeholder -->
+        <article class="shop-card shop-card--placeholder unmask" data-delay="1">
+          <a class="shop-card__media" href="#lookbook" data-cursor="view" aria-label="Shirt two, details coming">
+            <img src="assets/img/vallora-13.jpg" alt="Close detail of the Vallora chest mark" loading="lazy">
+          </a>
+          <div class="shop-card__row">
+            <h3 class="shop-card__name">SHIRT 02 &middot; [NAME TBC]</h3>
+            <p class="shop-card__price">Price over DM</p>
+          </div>
+          <p class="shop-card__tbc">Details landing with the drop.</p>
+          <details class="shop-card__more">
+            <summary><span>Size chart &middot; Care</span></summary>
+            <div class="shop-card__panel">
+              <p class="note">Size chart and care for this shirt land with its release. Sizing help over DM any time.</p>
+              <a class="btn btn--sm magnetic" href="https://www.instagram.com/vallorawear/" target="_blank" rel="noopener">Ask over DM</a>
+            </div>
+          </details>
+        </article>
+
+        <!-- 3 · placeholder -->
+        <article class="shop-card shop-card--placeholder unmask" data-delay="2">
+          <a class="shop-card__media" href="#lookbook" data-cursor="view" aria-label="Shirt three, details coming">
+            <img src="assets/img/vallora-06.jpg" alt="Phase 01 tee styled with denim" loading="lazy">
+          </a>
+          <div class="shop-card__row">
+            <h3 class="shop-card__name">SHIRT 03 &middot; [NAME TBC]</h3>
+            <p class="shop-card__price">Price over DM</p>
+          </div>
+          <p class="shop-card__tbc">Details landing with the drop.</p>
+          <details class="shop-card__more">
+            <summary><span>Size chart &middot; Care</span></summary>
+            <div class="shop-card__panel">
+              <p class="note">Size chart and care for this shirt land with its release. Sizing help over DM any time.</p>
+              <a class="btn btn--sm magnetic" href="https://www.instagram.com/vallorawear/" target="_blank" rel="noopener">Ask over DM</a>
+            </div>
+          </details>
+        </article>
+
+        <!-- 4 · placeholder -->
+        <article class="shop-card shop-card--placeholder unmask" data-delay="3">
+          <a class="shop-card__media" href="#lookbook" data-cursor="view" aria-label="Shirt four, details coming">
+            <img src="assets/img/vallora-10.jpg" alt="Phase 01 tee on the steps at dusk" loading="lazy">
+          </a>
+          <div class="shop-card__row">
+            <h3 class="shop-card__name">SHIRT 04 &middot; [NAME TBC]</h3>
+            <p class="shop-card__price">Price over DM</p>
+          </div>
+          <p class="shop-card__tbc">Details landing with the drop.</p>
+          <details class="shop-card__more">
+            <summary><span>Size chart &middot; Care</span></summary>
+            <div class="shop-card__panel">
+              <p class="note">Size chart and care for this shirt land with its release. Sizing help over DM any time.</p>
+              <a class="btn btn--sm magnetic" href="https://www.instagram.com/vallorawear/" target="_blank" rel="noopener">Ask over DM</a>
+            </div>
+          </details>
+        </article>
+
       </div>
 
-      <div class="product__copy">
-        <p class="eyebrow reveal"><span class="idx">01</span> Phase 01</p>
-        <h2 class="h2" data-split="lines">The only tee<br>you need.</h2>
-        <p class="lede reveal" data-delay="2">
-          One silhouette, cut heavy and worn in from the first day. Built to be
-          the thing you reach for without thinking, on the bike, in the gym,
-          three hundred kilometres from anywhere.
-        </p>
-
-        <dl class="specs">
-          <div class="reveal" data-delay="3"><dt>Back print</dt><dd>FEARLESS SOUL, set vertical</dd></div>
-          <div class="reveal" data-delay="4"><dt>Under print</dt><dd>WORLDWIDE MOBILITY</dd></div>
-          <div class="reveal" data-delay="5"><dt>Colourway</dt><dd>Black</dd></div>
-          <div class="reveal" data-delay="6"><dt>Drop</dt><dd>Phase 01, limited run</dd></div>
-        </dl>
-
-        <!-- TODO: real price + size run once the brand confirms them -->
-        <div class="product__cta reveal" data-delay="7">
-          <a class="btn magnetic" href="https://www.instagram.com/vallorawear/" target="_blank" rel="noopener">DM to order</a>
-          <p class="note">Sizes and pricing confirmed over DM.</p>
-        </div>
-      </div>
-
+      <p class="gallery__note reveal">Sizes and pricing confirmed over DM until checkout opens.</p>
     </div>
   </section>
 
@@ -195,11 +298,13 @@
     <div class="rail" id="rail">
       <div class="rail__inner">
         <div class="rail__track" id="railTrack">
-          <figure class="gal gal--wide unmask" data-cursor="view"><img src="assets/img/vallora-12.jpg" alt="Phase 01 tee at golden hour above the valley" loading="lazy"><figcaption><span>01</span> Above the valley</figcaption></figure>
-          <figure class="gal unmask" data-delay="1" data-cursor="view"><img src="assets/img/vallora-08.jpg" alt="Riding out in the Phase 01 tee" loading="lazy"><figcaption><span>02</span> Riding out</figcaption></figure>
-          <figure class="gal unmask" data-delay="2" data-cursor="view"><img src="assets/img/vallora-05.jpg" alt="Phase 01 campaign frame at sunset" loading="lazy"><figcaption><span>03</span> Last light</figcaption></figure>
-          <figure class="gal gal--crop-left unmask" data-delay="1" data-cursor="view"><img src="assets/img/vallora-10.jpg" alt="Phase 01 tee on the steps at dusk" loading="lazy"><figcaption><span>04</span> The steps</figcaption></figure>
-          <figure class="gal unmask" data-delay="2" data-cursor="view"><img src="assets/img/vallora-09.jpg" alt="Phase 01 launch frame" loading="lazy"><figcaption><span>05</span> Launch day</figcaption></figure>
+          <!-- Captions sit bottom-left on every frame, always visible, one
+               line of brand meaning each — per the client's reference. -->
+          <figure class="gal gal--wide unmask" data-cursor="view"><img src="assets/img/vallora-12.jpg" alt="Phase 01 tee at golden hour above the valley" loading="lazy"><figcaption><span>01</span> Fearless soul &mdash; the back says it for you</figcaption></figure>
+          <figure class="gal unmask" data-delay="1" data-cursor="view"><img src="assets/img/vallora-08.jpg" alt="Riding out in the Phase 01 tee" loading="lazy"><figcaption><span>02</span> Worldwide mobility &mdash; made to travel</figcaption></figure>
+          <figure class="gal unmask" data-delay="2" data-cursor="view"><img src="assets/img/vallora-05.jpg" alt="Phase 01 campaign frame at sunset" loading="lazy"><figcaption><span>03</span> Shot where the clothes live &mdash; no studio</figcaption></figure>
+          <figure class="gal gal--crop-left unmask" data-delay="1" data-cursor="view"><img src="assets/img/vallora-10.jpg" alt="Phase 01 tee on the steps at dusk" loading="lazy"><figcaption><span>04</span> Worn in from day one &mdash; not the mirror</figcaption></figure>
+          <figure class="gal unmask" data-delay="2" data-cursor="view"><img src="assets/img/vallora-09.jpg" alt="Phase 01 launch frame" loading="lazy"><figcaption><span>05</span> Released in phases &mdash; closed when gone</figcaption></figure>
 
           <div class="rail__end">
             <p class="eyebrow">End of Phase 01</p>
@@ -247,6 +352,24 @@
     </div>
   </section>
 
+  <!-- ─ contact ─
+       Sits directly under the ethos, per the client's note: WhatsApp and
+       Instagram. TODO: the WhatsApp number is a PLACEHOLDER — replace
+       000000000000 in BOTH links below (here and in the footer) with the
+       real number in international format, digits only. -->
+  <section class="section contact" id="contact">
+    <div class="wrap contact__inner">
+      <p class="eyebrow reveal"><span class="idx">04</span> Contact</p>
+      <h2 class="h2" data-split="lines">Talk to us.</h2>
+      <p class="lede reveal" data-delay="2">Orders, sizing, anything at all &mdash; the DMs are open.</p>
+      <div class="contact__actions reveal" data-delay="3">
+        <a class="btn magnetic contact__wa" href="https://wa.me/000000000000" target="_blank" rel="noopener">WhatsApp</a>
+        <a class="btn btn--ghost magnetic" href="https://www.instagram.com/vallorawear/" target="_blank" rel="noopener">Instagram</a>
+      </div>
+      <p class="note reveal" data-delay="4">@vallorawear &mdash; everywhere.</p>
+    </div>
+  </section>
+
   <!-- ─ feedback ─
        HIDDEN FOR LAUNCH. The markup below is finished and styled, it is only
        waiting on real quotes, which live in the brand's "Feedbacks" Instagram
@@ -276,7 +399,7 @@
     </div>
     <div class="phase02__scrim"></div>
     <div class="phase02__body">
-      <p class="eyebrow reveal"><span class="idx">04</span> Next</p>
+      <p class="eyebrow reveal"><span class="idx">05</span> Next</p>
       <h2 class="phase02__title" data-split="chars" data-delay="80">PHASE 02</h2>
       <p class="phase02__sub reveal" data-delay="4">Coming 2026</p>
       <a class="btn btn--ghost magnetic reveal" data-delay="5" href="https://www.instagram.com/vallorawear/" target="_blank" rel="noopener">
@@ -295,9 +418,11 @@
     </div>
 
     <nav class="footer__nav" aria-label="Footer">
-      <a href="#phase01">Phase 01</a>
+      <a href="#shop">Shop</a>
       <a href="#lookbook">Lookbook</a>
       <a href="#ethos">Ethos</a>
+      <a href="#contact">Contact</a>
+      <a href="https://wa.me/000000000000" target="_blank" rel="noopener">WhatsApp</a>
       <a href="https://www.instagram.com/vallorawear/" target="_blank" rel="noopener">Instagram</a>
     </nav>
 

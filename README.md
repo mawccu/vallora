@@ -38,9 +38,13 @@ the publish directory and asset caching. No build command needed.
 3. **Add pricing and the size run.** The Phase 01 spec list has no price and no
    sizes, because neither is public. There is a `TODO` marker in `index.html`.
 4. **Point the CTAs at the real order channel.** Every button currently opens
-   the Instagram profile. If there is a WhatsApp number or an order form, swap
-   the `href` values.
-5. **Favicon.** Currently the 150px Instagram avatar. Export a proper one.
+   the Instagram profile. The Contact section and footer have WhatsApp links
+   with a `wa.me/000000000000` placeholder — swap in the real number
+   (international format, digits only) in both places.
+5. **Fill the shop.** Only the Fearless Soul tee card is real. Shirts 02–04
+   are dashed placeholders waiting on names, photos and prices, and the size
+   chart measurements are dashed until the brand confirms them.
+6. **Favicon.** Currently the 150px Instagram avatar. Export a proper one.
 
 ## The set piece
 
