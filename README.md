@@ -4,13 +4,62 @@ Single page brand site for [@vallorawear](https://www.instagram.com/vallorawear/
 Static HTML, CSS and vanilla JS. No build step, no dependencies.
 
 ```
-index.html
+index.html                        landing
+shop/index.html                   the four pieces
+shop/fearless-soul-tee.html       the one real product page
+shop/piece-02.html                placeholder product pages
+shop/piece-03.html
+shop/piece-04.html
+lookbook/index.html               vertical scroll, captions bottom left
+ethos/index.html
+contact/index.html
 assets/
-  css/style.css
-  js/main.js
+  css/style.css                   one stylesheet for every page
+  js/config.js                    ← the only file you have to edit
+  js/main.js                      one script for every page
   img/vallora-*.jpg
+supabase/setup.sql                the reviews table, run once
 netlify.toml
 ```
+
+There is no build step and no templating, so the nav and the footer are
+duplicated in each page. That is the trade for zero dependencies: if you change
+one, change all nine. Everything else is shared through the stylesheet and the
+one script, which guards on the elements each block needs, so the same
+`main.js` runs the landing, a product page and the lookbook.
+
+## The two things that need real values
+
+Both live in `assets/js/config.js`, and nothing else has to be touched.
+
+1. **`whatsapp`** The order number, international format, digits only. Every
+   WhatsApp link on every page is rewritten from it. The `wa.me/000000000000`
+   written into the HTML is only the fallback for scripting off.
+2. **`supabase`** Where customer reviews live. Run `supabase/setup.sql` once in
+   the Supabase SQL editor, then paste the project URL and the anon key from
+   Settings → API. **While these are blank the site is still complete**: the
+   review list and form stay hidden and each product page shows the "send it
+   over DM" route instead.
+
+## Reviews
+
+Real customer words, or nothing. The rule that has survived every round of this
+project is that reviews are never invented, so the code is built to leave an
+honest empty state rather than fill it.
+
+- A visitor submits from the product page. The row lands with `approved = false`.
+- Nothing appears on the site until you tick `approved` in the Supabase table
+  editor. The policy that allows inserts checks `approved = false`, so a
+  submitter cannot publish themselves by sending `approved: true`.
+- There is no update or delete policy, which with RLS on means the anon key
+  cannot edit or remove a review either.
+- Every field is length- and range-checked in the database, not just the form,
+  because the anon key is public by definition.
+- A honeypot field catches the simplest bots before the request is made.
+- Reviews are written into the page with `textContent`, never `innerHTML`. This
+  is the one place on the site where a stranger supplies the string, and it is
+  covered by a test that submits `<img src=x onerror=...>` and asserts it renders
+  as visible text.
 
 ## Run locally
 
@@ -38,11 +87,8 @@ the publish directory and asset caching. No build command needed.
 3. **Add pricing and the size run.** Every card reads "Price over DM" because no
    price is public. There is a `TODO` block above the shop section in
    `index.html`.
-4. **Set the WhatsApp number.** The Contact section and the footer both link to
-   `wa.me/000000000000`, a placeholder. Replace it in both places with the real
-   number, international format, digits only. `main.js` reads the number back
-   off those hrefs to build the prefilled order message, so nothing else needs
-   editing.
+4. **Set the WhatsApp number** in `assets/js/config.js`. Every link on every
+   page picks it up.
 5. **Fill the shop.** Only the Fearless Soul tee is real. Pieces 02, 03 and 04
    are dashed, greyed placeholders waiting on names, photos and prices, and the
    size chart measurements are dashed until the brand confirms them.
@@ -80,13 +126,18 @@ lands.
 driven from the scroll loop. `main.js` builds the spans, so the copy stays an
 ordinary sentence in the markup and a dead script leaves plain paragraph text.
 
-**Product overlay** (`.pv`). Opening a card MOVES that card's `[data-panel]`
-node into the overlay and closing puts it back, so there is never a second copy
-of a size chart to fall out of date with the first. With scripting off the same
-node stays where it is, inside a native `<details>` under the card. Picking a
-size rewrites the WhatsApp link with a prefilled order message.
+**Product pages.** Each piece has its own page: photographs on the left, a
+buying column that sticks to the viewport as you scroll them, then the size
+chart, the wash care and the reviews across the full width. Picking a size
+rewrites the WhatsApp link with a prefilled order message, so the customer never
+types what they want.
 
-**Pinned horizontal lookbook** (`.rail`). The outer element is 440vh tall, the
+**Lookbook** (`/lookbook/`). A vertical editorial scroll of on-body frames.
+Every frame carries its caption bottom left, always visible: one line of what
+the brand means, then where it was shot. Full, wide and paired-tall shapes
+alternate, because a long scroll of one aspect ratio sets in.
+
+**Pinned horizontal lookbook** (`.rail`, landing only). The outer element is 440vh tall, the
 inner one sticks to the viewport, and the track is translated across as you
 scroll through that height. Native scroll throughout, nothing hijacked, and it
 can also be dragged: a horizontal drag is converted back into a vertical scroll
@@ -177,13 +228,20 @@ All hand written, no animation library.
 
 ## Verifying a change
 
-Screenshots prove it renders, they do not prove it works. Both were checked over
-CDP for this build: 24 assertions at 1512px and at 390px (overlay opens, the
-panel moves and comes back, the order link carries product, colour and size,
-focus and scroll lock behave, the footer wordmark fills its line to within a
-pixel, no console errors), plus 11 more with `main.js` blocked at the network
-layer to prove the watchdog path still shows every image, the size chart and a
-working order link.
+Screenshots prove it renders, they do not prove it works. This build was checked
+over CDP on all nine pages at 1512px, at 390px, and again with `main.js` blocked
+at the network layer: no 404s, no console errors, no horizontal overflow, every
+revealed block actually revealed after a full scroll, the footer wordmark filling
+its line to within a pixel, and the DM route still present on every product page
+when the script is gone.
+
+The review system is audited separately against a stubbed backend, since the
+Supabase project does not exist yet: config and `fetch` are overridden before any
+page script runs, then 21 assertions cover rendering, the star row, the submit
+payload, the honeypot, and the injection test described above.
+
+A local server is needed for any of it, because `file://` cannot resolve
+`/shop/` to `/shop/index.html`, which is exactly the thing that has to be tested.
 
 Never verify a reveal mechanism with a harness that forces the revealed state.
 An earlier screenshot harness added `is-in` before every capture, which meant it

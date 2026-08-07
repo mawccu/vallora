@@ -1,7 +1,11 @@
 /* VALLORA
    ------------------------------------------------------------------
-   Everything here is an enhancement. The page is readable, orderable
-   and navigable with this file blocked: the head watchdog strips the
+   One script for every page. Each block guards on the elements it
+   needs, so the landing, the shop, a product page and the lookbook all
+   load the same file and only run what applies.
+
+   Everything here is an enhancement. The page is readable, navigable
+   and orderable with this file blocked: the head watchdog strips the
    `js` class, which turns every hidden-until-revealed state back off,
    shows the native <details> under each product card and hides the
    loader. Nothing below may become the only way to reach content. */
@@ -15,6 +19,29 @@
   var doc = document;
   var $ = function (sel, ctx) { return (ctx || doc).querySelector(sel); };
   var $$ = function (sel, ctx) { return [].slice.call((ctx || doc).querySelectorAll(sel)); };
+
+  var CFG = window.VALLORA_CONFIG || {};
+  var SB = CFG.supabase || {};
+  var sbReady = !!(SB.url && SB.anonKey);
+
+  /* ── the order number ─────────────────────────────────────
+     config.js is the single place the real number is written.
+     The wa.me/000000000000 in the markup is the no-script
+     fallback, and it is what gets rewritten here. */
+
+  function waNumber() {
+    return (CFG.whatsapp || '').replace(/[^\d]/g, '');
+  }
+
+  function applyWhatsApp() {
+    var num = waNumber();
+    if (!num) return;
+    $$('a[href*="wa.me/"]').forEach(function (a) {
+      a.href = a.getAttribute('href').replace(/wa\.me\/\d+/, 'wa.me/' + num);
+    });
+  }
+
+  applyWhatsApp();
 
   /* ── split text ──────────────────────────────────────────
      Wraps each visual line (or character) in an overflow-hidden
@@ -118,7 +145,7 @@
     }
   }
 
-  /* ── loader ───────────────────────────────────────────────
+  /* ── loader (landing only) ────────────────────────────────
      The percentage is real: it counts campaign frames that have
      actually decoded. Two independent timeouts lift the curtain
      no matter what the counter says, because a curtain that can
@@ -151,19 +178,17 @@
   } else {
     doc.body.style.overflow = 'hidden';
 
-    var imgs = $$('img').filter(function (im) { return !im.loading || im.loading !== 'lazy'; });
-    // nothing eager to wait on would make the bar jump straight to 100, so
-    // fall back to the whole set
+    var imgs = $$('img').filter(function (im) { return im.loading !== 'lazy'; });
     if (!imgs.length) imgs = $$('img');
 
     var total = Math.max(1, imgs.length);
     var done = 0;
     var shown = 0;
 
-    function tick() {
+    var tick = function () {
       done++;
       if (done >= total) setTimeout(lift, 420);
-    }
+    };
 
     imgs.forEach(function (im) {
       if (im.complete) { tick(); return; }
@@ -188,7 +213,7 @@
     // belt, and braces
     setTimeout(lift, 4200);
     setTimeout(function () {
-      if (loader) { loader.classList.add('is-out', 'is-done'); }
+      if (loader) loader.classList.add('is-out', 'is-done');
       doc.body.style.overflow = '';
       openHero();
     }, 7000);
@@ -209,9 +234,9 @@
     }, 6200);
   }
 
-  /* ── scroll driven: nav, progress, parallax, rail, words ── */
+  /* ── scroll driven: top bar, progress, parallax, rail ──── */
 
-  var nav = $('#nav');
+  var top = $('#top-bar');
   var bar = $('.progress span');
   var parallax = $$('[data-parallax]');
   var marqueeTrack = $('.marquee__track');
@@ -245,9 +270,8 @@
     var vh = window.innerHeight;
     // 0 when the block's top sits at 78% of the viewport, 1 once its bottom
     // has climbed past 45%
-    var span = Math.max(1, (r.height + vh * 0.33));
-    var p = (vh * 0.78 - r.top) / span;
-    p = Math.max(0, Math.min(1, p));
+    var span = Math.max(1, r.height + vh * 0.33);
+    var p = Math.max(0, Math.min(1, (vh * 0.78 - r.top) / span));
 
     var lit = Math.round(p * words.length);
     for (var i = 0; i < words.length; i++) {
@@ -259,9 +283,11 @@
     ticking = false;
     var y = window.scrollY;
 
-    nav.classList.toggle('is-stuck', y > 40);
-    // hide going down, reveal going up, but never over the hero
-    nav.classList.toggle('is-hidden', y > 400 && y > lastY);
+    if (top) {
+      top.classList.toggle('is-stuck', y > 40);
+      // get out of the way going down, come back going up
+      top.classList.toggle('is-hidden', y > 400 && y > lastY);
+    }
 
     if (bar) bar.style.transform = 'scaleX(' + (y / limit()).toFixed(4) + ')';
 
@@ -384,188 +410,251 @@
   }
 
   /* ══════════════════════════════════════════════════════════
-     PRODUCT OVERLAY
-     The card's panel is the single source of truth. Opening a
-     product MOVES that node into the overlay and closing puts it
-     back, so there is never a second copy of a size chart to fall
-     out of date with the first.
+     PRODUCT PAGE
+     Size selection writes the order message, so the customer
+     never has to type what they want.
      ══════════════════════════════════════════════════════════ */
 
-  var pv = $('#pv');
-  var pvSlot = $('#pvSlot');
-  var pvImg = $('#pvImg');
-  var pvName = $('#pvName');
-  var pvPrice = $('#pvPrice');
-  var pvBadge = $('#pvBadge');
-  var pvClose = $('.pv__close');
+  var pdp = $('[data-product]');
 
-  var openPanel = null;   // the node currently borrowed from a card
-  var panelHome = null;   // where to put it back
-  var opener = null;      // what to return focus to
-
-  function waNumber(a) {
-    // the number lives in the markup, never duplicated here, so replacing the
-    // placeholder in index.html is the only edit needed
-    var m = (a.getAttribute('href') || '').match(/wa\.me\/(\d+)/);
-    return m ? m[1] : null;
-  }
-
-  function orderText(card, size) {
-    var name = card.getAttribute('data-product') || 'a piece';
-    var colour = card.getAttribute('data-colour');
+  function orderText(size) {
+    if (!pdp) return '';
+    var name = pdp.getAttribute('data-name') || 'a piece';
+    var colour = pdp.getAttribute('data-colour');
     return 'Hi VALLORA, I would like the ' + name +
            (colour ? ' in ' + colour : '') +
            (size ? ', size ' + size : '') + '. Is it available?';
   }
 
-  function syncOrderLink(card, panel) {
-    var wa = $('[data-order-wa]', panel);
-    if (!wa) return;
-    var num = waNumber(wa);
-    if (!num) return;
-    var on = $('.chip.is-on', panel);
-    wa.href = 'https://wa.me/' + num + '?text=' +
-              encodeURIComponent(orderText(card, on ? on.getAttribute('data-size') : ''));
+  function syncOrder() {
+    if (!pdp) return;
+    var on = $('.chip.is-on', pdp);
+    var size = on ? on.getAttribute('data-size') : '';
+
+    var wa = $('[data-order-wa]', pdp);
+    if (wa) {
+      var m = (wa.getAttribute('href') || '').match(/wa\.me\/(\d+)/);
+      var num = waNumber() || (m ? m[1] : '');
+      if (num) wa.href = 'https://wa.me/' + num + '?text=' + encodeURIComponent(orderText(size));
+    }
+
+    // the review form asks which size they bought, so preselect it
+    var sizeField = $('.rform select[name="size"]');
+    if (sizeField && size) sizeField.value = size;
   }
 
-  function openPV(card) {
-    if (!pv || !pvSlot) return;
-
-    var panel = $('[data-panel]', card);
-    if (!panel) return;
-
-    panelHome = panel.parentNode;
-    openPanel = panel;
-    pvSlot.appendChild(panel);
-    syncOrderLink(card, panel);
-    pvSlot.setAttribute('data-for', card.getAttribute('data-product') || '');
-
-    var img = $('.card__img', card);
-    var name = $('.card__name', card);
-    var price = $('.card__price', card);
-    var badge = $('.card__badge', card);
-
-    if (pvImg && img) { pvImg.src = img.currentSrc || img.src; pvImg.alt = img.alt || ''; }
-    if (pvName && name) pvName.textContent = name.textContent.trim();
-    if (pvPrice && price) pvPrice.textContent = price.textContent.trim();
-    if (pvBadge) pvBadge.textContent = badge ? badge.textContent.trim() : 'Vallora';
-
-    pv.hidden = false;
-    doc.body.classList.add('is-locked');
-    requestAnimationFrame(function () {
-      requestAnimationFrame(function () { pv.classList.add('is-open'); });
+  if (pdp) {
+    $$('.chip', pdp).forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        var group = chip.parentNode;
+        $$('.chip', group).forEach(function (c) {
+          c.classList.toggle('is-on', c === chip);
+          c.setAttribute('aria-pressed', String(c === chip));
+        });
+        syncOrder();
+      });
     });
-
-    if (pvClose) pvClose.focus();
+    syncOrder();
   }
 
-  function closePV() {
-    if (!pv || pv.hidden) return;
-    pv.classList.remove('is-open');
-    doc.body.classList.remove('is-locked');
+  /* ══════════════════════════════════════════════════════════
+     REVIEWS
+     Talks to Supabase over PostgREST directly, no SDK. Until
+     config.js has a url and an anon key, the list stays hidden
+     and the offline block (send it over DM) is what shows, so
+     there is always a way to leave one.
 
-    var finish = function () {
-      if (openPanel && panelHome) panelHome.appendChild(openPanel);
-      openPanel = null;
-      panelHome = null;
-      pv.hidden = true;
-      if (opener) { opener.focus(); opener = null; }
-    };
+     Everything a customer wrote is inserted with textContent.
+     Never innerHTML: this is the one place on the site where a
+     stranger supplies the string.
+     ══════════════════════════════════════════════════════════ */
 
-    // the sheet transition is .7s; the timeout is the fallback for a hidden
-    // tab, where transitions do not run at all
-    var sheet = $('.pv__sheet', pv);
-    var settled = false;
-    var once = function () { if (!settled) { settled = true; finish(); } };
-    if (sheet) sheet.addEventListener('transitionend', once, { once: true });
-    setTimeout(once, 800);
+  var reviewBox = $('[data-reviews]');
+
+  function sbFetch(path, opts) {
+    opts = opts || {};
+    opts.headers = Object.assign({
+      apikey: SB.anonKey,
+      Authorization: 'Bearer ' + SB.anonKey,
+      'Content-Type': 'application/json'
+    }, opts.headers || {});
+    return fetch(SB.url.replace(/\/+$/, '') + '/rest/v1/' + path, opts);
   }
 
-  $$('.card').forEach(function (card) {
-    var media = $('.card__media', card);
-    if (!media) return;
-    media.addEventListener('click', function (e) {
-      e.preventDefault();
-      opener = $('.card__open', card) || media;
-      openPV(card);
+  function stars(n) {
+    var el = doc.createElement('span');
+    el.className = 'review__stars';
+    el.setAttribute('aria-label', n + ' out of 5');
+    for (var i = 1; i <= 5; i++) {
+      var s = doc.createElement('span');
+      s.textContent = '◆';
+      if (i <= n) s.style.opacity = '1';
+      el.appendChild(s);
+    }
+    return el;
+  }
+
+  function renderReviews(list) {
+    var grid = $('[data-review-list]');
+    var empty = $('[data-review-empty]');
+    var count = $('[data-review-count]');
+    if (!grid) return;
+
+    grid.textContent = '';
+
+    if (!list.length) {
+      if (empty) empty.hidden = false;
+      if (count) count.textContent = '';
+      return;
+    }
+    if (empty) empty.hidden = true;
+    if (count) count.textContent = list.length === 1 ? '1 review' : list.length + ' reviews';
+
+    list.forEach(function (r) {
+      var fig = doc.createElement('figure');
+      fig.className = 'review';
+
+      if (r.rating) fig.appendChild(stars(r.rating));
+
+      var q = doc.createElement('blockquote');
+      q.textContent = r.body;
+      fig.appendChild(q);
+
+      var cap = doc.createElement('figcaption');
+      cap.textContent = [r.name, r.city, r.size ? 'size ' + r.size : '']
+        .filter(Boolean).join(' . ');
+      fig.appendChild(cap);
+
+      grid.appendChild(fig);
     });
-  });
+  }
 
-  if (pv) {
-    $$('[data-pv-close]', pv).forEach(function (el) {
-      el.addEventListener('click', closePV);
-    });
+  function loadReviews(slug) {
+    if (!sbReady) return;
+    sbFetch('reviews?select=name,city,size,rating,body&product=eq.' +
+            encodeURIComponent(slug) + '&approved=eq.true&order=created_at.desc&limit=60')
+      .then(function (r) { return r.ok ? r.json() : []; })
+      .then(renderReviews)
+      .catch(function () { /* the offline block is already on screen */ });
+  }
 
-    // size chips live inside the borrowed panel, so the listener has to be
-    // delegated from the slot rather than bound per chip
-    pvSlot.addEventListener('click', function (e) {
-      var chip = e.target.closest ? e.target.closest('.chip') : null;
-      if (!chip) return;
-      var group = chip.parentNode;
-      $$('.chip', group).forEach(function (c) { c.classList.toggle('is-on', c === chip); });
+  if (reviewBox) {
+    var slug = reviewBox.getAttribute('data-reviews');
+    var form = $('[data-review-form]');
+    var offline = $('[data-review-offline]');
 
-      var card = $$('.card').filter(function (c) {
-        return (c.getAttribute('data-product') || '') === pvSlot.getAttribute('data-for');
-      })[0];
-      if (card && openPanel) syncOrderLink(card, openPanel);
-    });
+    var listWrap = $('[data-review-listwrap]');
 
-    doc.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape' && !pv.hidden) closePV();
+    // The markup's default state is the offline one: form and list hidden,
+    // the DM route showing. That way a visitor with scripting off, or with
+    // config.js not yet filled in, still sees a way to leave a review rather
+    // than an empty box that never fills.
+    if (sbReady) {
+      if (form) form.hidden = false;
+      if (offline) offline.hidden = true;
+      if (listWrap) listWrap.hidden = false;
+      loadReviews(slug);
+    }
 
-      // a modal that lets focus wander behind it is not a modal
-      if (e.key === 'Tab' && !pv.hidden) {
-        var f = $$('a[href], button, [tabindex]:not([tabindex="-1"])', pv)
-          .filter(function (el) { return el.offsetParent !== null; });
-        if (!f.length) return;
-        var first = f[0], last = f[f.length - 1];
-        if (e.shiftKey && doc.activeElement === first) { e.preventDefault(); last.focus(); }
-        else if (!e.shiftKey && doc.activeElement === last) { e.preventDefault(); first.focus(); }
-      }
-    });
+    if (form) {
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        if (!sbReady) return;
+
+        var msg = $('[data-review-msg]', form);
+        var btn = $('button[type="submit"]', form);
+        var say = function (text) {
+          if (!msg) return;
+          msg.textContent = text;
+          msg.hidden = false;
+        };
+
+        // honeypot: a real person never fills a field they cannot see
+        if (form.elements.website && form.elements.website.value) {
+          say('Thanks, that has been sent.');
+          form.reset();
+          return;
+        }
+
+        var payload = {
+          product: slug,
+          name: (form.elements.name.value || '').trim(),
+          city: (form.elements.city.value || '').trim() || null,
+          size: form.elements.size.value || null,
+          rating: parseInt(form.elements.rating.value, 10),
+          body: (form.elements.body.value || '').trim()
+        };
+
+        if (payload.name.length < 2 || payload.body.length < 10) {
+          say('A name and at least a sentence, please.');
+          return;
+        }
+
+        if (btn) { btn.disabled = true; btn.textContent = 'Sending'; }
+
+        sbFetch('reviews', {
+          method: 'POST',
+          headers: { Prefer: 'return=minimal' },
+          body: JSON.stringify(payload)
+        }).then(function (r) {
+          if (btn) { btn.disabled = false; btn.textContent = 'Send review'; }
+          if (r.ok) {
+            form.reset();
+            say('Thank you. Your review goes up once we have read it.');
+          } else {
+            say('That did not send. Try again, or send it to us on Instagram.');
+          }
+        }).catch(function () {
+          if (btn) { btn.disabled = false; btn.textContent = 'Send review'; }
+          say('That did not send. Try again, or send it to us on Instagram.');
+        });
+      });
+    }
   }
 
   /* ── custom cursor ───────────────────────────────────── */
 
   if (fine && !reduced) {
     var cur = $('.cursor');
-    var dot = $('.cursor__dot', cur);
-    var ring = $('.cursor__ring', cur);
-    var label = $('.cursor__label', cur);
+    if (cur) {
+      var dot = $('.cursor__dot', cur);
+      var ring = $('.cursor__ring', cur);
+      var label = $('.cursor__label', cur);
 
-    var mx = window.innerWidth / 2, my = window.innerHeight / 2;
-    var rx = mx, ry = my;
+      var mx = window.innerWidth / 2, my = window.innerHeight / 2;
+      var rx = mx, ry = my;
 
-    window.addEventListener('mousemove', function (e) {
-      if (!cur.classList.contains('is-live')) {
-        // jump the ring to the pointer so it does not fly in from centre
-        rx = e.clientX; ry = e.clientY;
-        cur.classList.add('is-live');
-      }
-      mx = e.clientX; my = e.clientY;
-      dot.style.transform = 'translate(' + mx + 'px,' + my + 'px) translate(-50%,-50%)';
-    }, { passive: true });
+      window.addEventListener('mousemove', function (e) {
+        if (!cur.classList.contains('is-live')) {
+          // jump the ring to the pointer so it does not fly in from centre
+          rx = e.clientX; ry = e.clientY;
+          cur.classList.add('is-live');
+        }
+        mx = e.clientX; my = e.clientY;
+        dot.style.transform = 'translate(' + mx + 'px,' + my + 'px) translate(-50%,-50%)';
+      }, { passive: true });
 
-    (function ringLoop() {
-      // ring lags the dot, which is what sells it as a physical object
-      rx += (mx - rx) * 0.16;
-      ry += (my - ry) * 0.16;
-      ring.style.transform = 'translate(' + rx.toFixed(2) + 'px,' + ry.toFixed(2) + 'px) translate(-50%,-50%)';
-      requestAnimationFrame(ringLoop);
-    })();
+      (function ringLoop() {
+        // ring lags the dot, which is what sells it as a physical object
+        rx += (mx - rx) * 0.16;
+        ry += (my - ry) * 0.16;
+        ring.style.transform = 'translate(' + rx.toFixed(2) + 'px,' + ry.toFixed(2) + 'px) translate(-50%,-50%)';
+        requestAnimationFrame(ringLoop);
+      })();
 
-    var LABELS = { view: 'Drag', open: 'Open' };
+      var LABELS = { view: 'Drag', open: 'Open', look: 'Look' };
 
-    $$('a, button, [data-cursor]').forEach(function (el) {
-      var mode = el.getAttribute('data-cursor');
-      el.addEventListener('mouseenter', function () {
-        if (mode && LABELS[mode]) { cur.classList.add('is-view'); label.textContent = LABELS[mode]; }
-        else cur.classList.add('is-hover');
+      $$('a, button, [data-cursor]').forEach(function (el) {
+        var mode = el.getAttribute('data-cursor');
+        el.addEventListener('mouseenter', function () {
+          if (mode && LABELS[mode]) { cur.classList.add('is-view'); label.textContent = LABELS[mode]; }
+          else cur.classList.add('is-hover');
+        });
+        el.addEventListener('mouseleave', function () {
+          cur.classList.remove('is-hover', 'is-view');
+        });
       });
-      el.addEventListener('mouseleave', function () {
-        cur.classList.remove('is-hover', 'is-view');
-      });
-    });
+    }
   }
 
   /* ── magnetic buttons ────────────────────────────────── */
@@ -598,45 +687,47 @@
   var burger = $('#burger');
   var menu = $('#mobileMenu');
 
-  function setMenu(open) {
-    burger.setAttribute('aria-expanded', String(open));
-    doc.body.classList.toggle('is-locked', open);
+  if (burger && menu) {
+    var setMenu = function (open) {
+      burger.setAttribute('aria-expanded', String(open));
+      doc.body.classList.toggle('is-locked', open);
 
-    if (open) {
-      menu.hidden = false;
-      // let the element paint before transitioning opacity
-      requestAnimationFrame(function () { menu.classList.add('is-open'); });
-    } else {
-      menu.classList.remove('is-open');
-      var settled = false;
-      var done = function () { if (settled) return; settled = true; menu.hidden = true; };
-      menu.addEventListener('transitionend', done, { once: true });
-      // fallback in case the transition never fires (reduced motion, hidden tab)
-      setTimeout(done, 450);
-    }
+      if (open) {
+        menu.hidden = false;
+        // let the element paint before transitioning opacity
+        requestAnimationFrame(function () { menu.classList.add('is-open'); });
+      } else {
+        menu.classList.remove('is-open');
+        var settled = false;
+        var done2 = function () { if (settled) return; settled = true; menu.hidden = true; };
+        menu.addEventListener('transitionend', done2, { once: true });
+        // fallback in case the transition never fires (reduced motion, hidden tab)
+        setTimeout(done2, 450);
+      }
+    };
+
+    burger.addEventListener('click', function () {
+      setMenu(burger.getAttribute('aria-expanded') !== 'true');
+    });
+
+    menu.addEventListener('click', function (e) {
+      if (e.target.closest && e.target.closest('a')) setMenu(false);
+    });
+
+    doc.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && burger.getAttribute('aria-expanded') === 'true') {
+        setMenu(false);
+        burger.focus();
+      }
+    });
+
+    // a resize past the breakpoint leaves the overlay orphaned otherwise
+    window.addEventListener('resize', function () {
+      if (window.innerWidth > 900 && burger.getAttribute('aria-expanded') === 'true') {
+        setMenu(false);
+      }
+    });
   }
-
-  burger.addEventListener('click', function () {
-    setMenu(burger.getAttribute('aria-expanded') !== 'true');
-  });
-
-  menu.addEventListener('click', function (e) {
-    if (e.target.tagName === 'A' || e.target.parentNode.tagName === 'A') setMenu(false);
-  });
-
-  doc.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape' && burger.getAttribute('aria-expanded') === 'true') {
-      setMenu(false);
-      burger.focus();
-    }
-  });
-
-  // a resize past the breakpoint leaves the overlay orphaned otherwise
-  window.addEventListener('resize', function () {
-    if (window.innerWidth > 900 && burger.getAttribute('aria-expanded') === 'true') {
-      setMenu(false);
-    }
-  });
 
   /* ── misc ────────────────────────────────────────────── */
 
@@ -652,9 +743,8 @@
 
   function fitMark() {
     if (!mark || !markText) return;
-    var box = mark.clientWidth -
-      parseFloat(getComputedStyle(mark).paddingLeft) -
-      parseFloat(getComputedStyle(mark).paddingRight);
+    var cs = getComputedStyle(mark);
+    var box = mark.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
     if (box <= 0) return;
     markText.style.fontSize = '100px';
     var w = markText.getBoundingClientRect().width;

@@ -359,34 +359,87 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
 /* ── nav ────────────────────────────────────────────────── */
 
+/* The whole top block is one fixed unit, so the nav never has to do layout
+   maths to sit under the announcement bar. Scrolling collapses the bar and
+   leaves the nav where it already was. */
+.top{position:fixed;inset:0 0 auto;z-index:100}
+
+/* announcement bar, collapses out of the way once you start scrolling */
+.bar{
+  overflow:hidden;
+  padding:.6rem var(--gut);
+  background:var(--paper);
+  color:var(--ink);
+  text-align:center;
+  font-size:.6rem;
+  font-weight:500;
+  letter-spacing:var(--track-lg);
+  text-transform:uppercase;
+}
+.bar a{border-bottom:1px solid rgba(6,6,6,.35);padding-bottom:1px}
+.bar i{font-style:normal;color:var(--ember);margin-inline:.7em}
+.bar{
+  height:2rem;
+  transition:height .45s var(--ease),opacity .35s var(--ease);
+}
+.top.is-stuck .bar{height:0;opacity:0;padding-block:0}
+
 .nav{
-  position:fixed;inset:0 0 auto;z-index:100;
   transition:background .5s var(--ease),backdrop-filter .5s var(--ease),
-             border-color .5s var(--ease),transform .55s var(--ease);
+             border-color .5s var(--ease);
   border-bottom:1px solid transparent;
 }
-.nav.is-stuck{
+.top.is-stuck .nav{
   background:rgba(6,6,6,.72);
   backdrop-filter:blur(16px) saturate(1.2);
   -webkit-backdrop-filter:blur(16px) saturate(1.2);
   border-bottom-color:var(--line-c);
 }
 /* get out of the way on the way down, come back on the way up */
-.nav.is-hidden{transform:translateY(-101%)}
+.top.is-hidden{transform:translateY(-101%)}
+.top{transition:transform .55s var(--ease)}
 
+/* Inner pages open on a solid nav rather than a transparent one. The landing
+   is the only page whose first screen is a photograph for the nav to sit on,
+   and over the paper store ground a transparent nav would be invisible. */
+/* the .is-stuck rule above carries one more class, so an inner page's nav has
+   to match that weight or it goes translucent the moment you scroll */
+.top--solid .nav,
+.top--solid.is-stuck .nav{
+  background:var(--ink);
+  backdrop-filter:none;
+  -webkit-backdrop-filter:none;
+  border-bottom-color:var(--line-c);
+}
+
+/* the wordmark is the logo on the landing, so it carries a little more weight
+   there than it does as a back-to-home link on an inner page */
+.top--home .wordmark--sm{font-size:.95rem}
+
+/* three tracks, so the wordmark is centred on the VIEWPORT and not merely
+   placed between two runs of links that happen to differ in width */
 .nav__inner{
   max-width:var(--wrap);
   margin-inline:auto;
-  padding:1.25rem var(--gut);
-  display:flex;
+  padding:1.1rem var(--gut);
+  display:grid;
+  grid-template-columns:1fr auto 1fr;
   align-items:center;
-  gap:2rem;
+  gap:1.5rem;
 }
+.nav__brand{justify-self:center;grid-column:2}
 
 .nav__links{
-  margin-inline:auto;
+  grid-column:1;
   display:flex;
-  gap:2.4rem;
+  gap:2.2rem;
+}
+.nav__side{
+  grid-column:3;
+  justify-self:end;
+  display:flex;
+  align-items:center;
+  gap:1.6rem;
 }
 .nav__links a{
   display:block;
@@ -418,8 +471,19 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   letter-spacing:var(--track-md);
   text-transform:uppercase;
   color:var(--paper);
+  white-space:nowrap;
   will-change:transform;
 }
+/* icon links: the reference puts account and bag here, this brand has no cart,
+   so the two real order channels take that slot instead */
+.nav__ico{
+  display:grid;place-items:center;
+  width:34px;height:34px;
+  color:var(--dim);
+  transition:color .35s var(--ease);
+}
+.nav__ico:hover{color:var(--paper)}
+.nav__ico svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.5}
 .nav__dot{
   width:6px;height:6px;
   border-radius:50%;
@@ -492,13 +556,18 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 
 /* ── hero ───────────────────────────────────────────────── */
 
+/* The landing, following the client's reference: one full-bleed campaign
+   frame, the drop title low in it, and exactly two doors in. The copy is
+   anchored to the bottom third rather than centred, which is what leaves the
+   photograph room to be the subject. */
 .hero{
   position:relative;
   min-height:100svh;
   display:grid;
-  place-items:center;
+  align-content:end;
+  justify-items:center;
   text-align:center;
-  padding:8rem var(--gut) 8rem;
+  padding:9rem var(--gut) clamp(4.5rem,13vh,8rem);
   overflow:hidden;
   /* if a photo fails to load the gradient still reads as intentional */
   background:radial-gradient(120% 80% at 50% 0%,#1b1611 0%,var(--ink) 62%);
@@ -568,25 +637,27 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 @keyframes ruleIn{to{transform:scaleX(1)}}
 
 .hero__drop{
-  margin:0 auto 2.8rem;
+  margin:0 auto 1.8rem;
   font-family:"Archivo",sans-serif;
-  font-size:clamp(.78rem,1.7vw,1.02rem);
+  font-size:clamp(.86rem,2.1vw,1.25rem);
   font-weight:700;
   letter-spacing:var(--track-lg);
   text-transform:uppercase;
   color:var(--paper);
 }
 
+/* side by side, and they stay side by side on a phone: the reference puts
+   both doors on one line and that is the whole shape of the landing */
 .hero__actions{
   display:flex;
-  flex-wrap:wrap;
-  gap:1rem;
+  gap:.9rem;
   justify-content:center;
 }
+.hero__actions .btn{min-width:clamp(8rem,26vw,11rem)}
 
 .hero__foot{
   position:absolute;
-  left:0;right:0;bottom:2.2rem;
+  left:0;right:0;bottom:1.6rem;
   z-index:2;
   padding-inline:var(--gut);
   display:flex;
@@ -601,7 +672,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   color:var(--dim);
 }
 
-.hero__scroll{width:1px;height:56px;overflow:hidden;flex:none}
+.hero__scroll{width:1px;height:40px;overflow:hidden;flex:none}
 .hero__scroll-line{
   display:block;width:1px;height:100%;
   background:var(--paper-dim);
@@ -819,6 +890,49 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   font-size:.76rem;
   color:var(--dim);
 }
+.card__name a:hover{color:var(--ember)}
+
+/* sizing help block under the shop grid */
+.shop__foot{
+  display:grid;
+  grid-template-columns:1.2fr .8fr;
+  align-items:center;
+  gap:clamp(1.5rem,3vw,3rem);
+  margin-top:clamp(3rem,6vw,5rem);
+  padding-top:clamp(2rem,4vw,3rem);
+  border-top:1px solid var(--line-c);
+}
+.shop__foot p{margin:0;max-width:42ch;font-size:.92rem;color:var(--dim)}
+.shop__footcta{display:flex;flex-wrap:wrap;gap:.7rem;justify-content:flex-end}
+
+.shop__more{margin:clamp(2.2rem,4vw,3rem) 0 0}
+
+/* the three-up ethos summary on the landing. the long version, with the
+   sticky stack, is the /ethos/ page. */
+.brief{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:clamp(1.6rem,3vw,3rem);
+  padding-top:clamp(1.5rem,3vw,2.5rem);
+  border-top:1px solid var(--line-c);
+}
+.brief__no{
+  display:block;
+  margin-bottom:.9rem;
+  font-family:"Archivo",sans-serif;
+  font-weight:900;
+  font-size:.72rem;
+  color:var(--ember);
+}
+.brief__col h3{
+  margin:0 0 .6rem;
+  font-family:"Archivo",sans-serif;
+  font-weight:700;
+  font-size:clamp(1rem,1.7vw,1.25rem);
+  letter-spacing:-.01em;
+  text-transform:uppercase;
+}
+.brief__col p{margin:0;font-size:.9rem;color:var(--dim)}
 
 /* placeholder cards: dashed, per the repo convention, so they cannot ship
    unnoticed with invented names on them */
@@ -930,68 +1044,118 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   background:var(--ember);
 }
 
-/* ── product overlay ────────────────────────────────────── */
+body.is-locked{overflow:hidden}
 
-.pv{position:fixed;inset:0;z-index:390;display:grid}
-.pv[hidden]{display:none}
+/* ============================================================
+   inner pages
+   Every page except the landing opens under a solid nav and a
+   page head, so the top of a page always tells you where you are.
+   ============================================================ */
 
-.pv__scrim{
-  position:absolute;inset:0;
-  background:rgba(6,6,6,.55);
-  backdrop-filter:blur(6px);
-  -webkit-backdrop-filter:blur(6px);
-  opacity:0;
-  transition:opacity .5s var(--ease);
+/* clears the fixed top block. constant, because the announcement bar
+   collapsing on scroll must not shift the page under the reader. */
+.page{padding-top:6.4rem}
+
+.page-head{padding:clamp(2.5rem,6vw,4.5rem) 0 clamp(2rem,4vw,3rem)}
+.page-head .display{margin-top:.4rem}
+.page-head__meta{
+  margin:clamp(1.6rem,3vw,2.4rem) 0 0;
+  padding-top:1.4rem;
+  border-top:1px solid var(--line-c);
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:2rem;
+  flex-wrap:wrap;
 }
-.pv.is-open .pv__scrim{opacity:1}
+.page-head__meta p{margin:0;max-width:48ch;font-size:.95rem;color:var(--dim)}
+.page-head__count{
+  flex:none;
+  font-size:.64rem;
+  letter-spacing:var(--track-md);
+  text-transform:uppercase;
+  color:var(--dim);
+}
+.page-head__count em{
+  font-family:"Archivo",sans-serif;
+  font-style:normal;
+  font-weight:900;
+  font-size:1.5rem;
+  letter-spacing:-.02em;
+  color:var(--fg);
+  margin-right:.4em;
+}
 
-.pv__sheet{
+/* the paper ground is the store: /shop/ and every product page */
+.store{
   --bg:var(--paper);
   --fg:var(--ink);
   --dim:#6d675e;
   --line-c:rgba(6,6,6,.16);
-  position:relative;
-  justify-self:end;
-  width:min(1080px,100%);
-  height:100%;
-  display:grid;
-  grid-template-columns:1fr 1fr;
   background:var(--bg);
   color:var(--fg);
-  transform:translateX(4%);
-  opacity:0;
-  transition:transform .7s var(--ease-mask),opacity .5s var(--ease);
 }
-.pv.is-open .pv__sheet{transform:none;opacity:1}
+.store ::selection{background:var(--ink);color:var(--paper)}
 
-.pv__media{position:relative;overflow:hidden;background:#d8d3c9}
-.pv__media img{width:100%;height:100%;object-fit:cover}
+.crumbs{
+  display:flex;
+  align-items:center;
+  gap:.7rem;
+  font-size:.62rem;
+  letter-spacing:var(--track-md);
+  text-transform:uppercase;
+  color:var(--dim);
+}
+.crumbs a:hover{color:var(--fg)}
+.crumbs i{font-style:normal;opacity:.5}
 
-.pv__body{
+/* ============================================================
+   product page
+   ============================================================ */
+
+.pdp{padding-bottom:clamp(3rem,7vw,5rem)}
+
+.pdp__grid{
+  display:grid;
+  grid-template-columns:1.12fr .88fr;
+  gap:clamp(2rem,4vw,4rem);
+  align-items:start;
+  padding-top:clamp(1.5rem,3vw,2.5rem);
+}
+
+.pdp__media{display:grid;gap:clamp(.5rem,1vw,.9rem)}
+.pdp__shot{
+  margin:0;
   position:relative;
-  overflow-y:auto;
-  overscroll-behavior:contain;
-  padding:clamp(2.5rem,4vw,4rem) clamp(1.6rem,3vw,3rem) 4rem;
+  aspect-ratio:4/5;
+  overflow:hidden;
+  background:linear-gradient(150deg,#d8d3c9,#c9c3b8);
 }
+.pdp__shot img{width:100%;height:100%;object-fit:cover}
+.pdp__shot--wide{aspect-ratio:4/3}
 
-.pv__eyebrow{
-  margin:0 0 1rem;
+/* the buying column follows you down the photographs */
+.pdp__panel{position:sticky;top:7rem}
+
+.pdp__eyebrow{
+  margin:0 0 .9rem;
   font-size:.6rem;
   letter-spacing:var(--track-lg);
   text-transform:uppercase;
   color:var(--ember);
 }
-.pv__name{
+.pdp__name{
   margin:0;
   font-family:"Archivo",sans-serif;
   font-weight:900;
-  font-size:clamp(1.6rem,3vw,2.4rem);
-  line-height:1;
-  letter-spacing:-.025em;
+  font-size:clamp(1.7rem,3.4vw,2.7rem);
+  line-height:.98;
+  letter-spacing:-.028em;
   text-transform:uppercase;
 }
-.pv__price{
-  margin:.8rem 0 2rem;
+.pdp__name em{font-style:normal;color:var(--dim)}
+.pdp__price{
+  margin:.9rem 0 1.8rem;
   padding-bottom:1.6rem;
   border-bottom:1px solid var(--line-c);
   font-size:.72rem;
@@ -999,24 +1163,256 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
   text-transform:uppercase;
   color:var(--dim);
 }
+.pdp__lede{margin:0 0 1.8rem;font-size:.95rem;color:var(--dim);max-width:44ch}
 
-.pv__close{
-  position:absolute;top:1.1rem;right:1.1rem;z-index:3;
-  width:44px;height:44px;
-  border:1px solid var(--line-c);
+/* the unreleased pieces. dashed everywhere, per the repo convention that a
+   placeholder must never be able to read as a finished product. */
+.pdp__shot--tbc{outline:1px dashed var(--line-c);outline-offset:-1px}
+.pdp__shot--tbc img{filter:grayscale(1);opacity:.55}
+.pdp__shot--tbc figcaption{
+  position:absolute;left:0;bottom:0;
+  padding:.5rem .8rem;
   background:var(--bg);
+  font-size:.58rem;
+  letter-spacing:var(--track-md);
+  text-transform:uppercase;
+  color:var(--dim);
 }
-.pv__close span{
-  position:absolute;left:12px;top:21px;
-  width:18px;height:1px;
-  background:var(--fg);
+.specs--tbc dd{color:var(--dim)}
+.tbc-note{
+  margin:0 0 1.8rem;
+  padding:1.1rem 1.2rem;
+  border:1px dashed var(--line-c);
 }
-.pv__close span:nth-child(1){transform:rotate(45deg)}
-.pv__close span:nth-child(2){transform:rotate(-45deg)}
-.pv__close:hover{background:var(--fg)}
-.pv__close:hover span{background:var(--bg)}
+.tbc-note p{margin:0;font-size:.86rem;color:var(--dim)}
 
-body.is-locked{overflow:hidden}
+/* the long-form blocks under the two columns */
+.pdp__detail{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:clamp(2rem,4vw,3.5rem);
+  margin-top:clamp(3rem,6vw,5rem);
+  padding-top:clamp(2rem,4vw,3rem);
+  border-top:1px solid var(--line-c);
+}
+
+/* ── reviews ────────────────────────────────────────────── */
+
+.reviews{
+  margin-top:clamp(3rem,6vw,5rem);
+  padding-top:clamp(2rem,4vw,3rem);
+  border-top:1px solid var(--line-c);
+}
+.reviews__head{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:1.5rem;
+  flex-wrap:wrap;
+  margin-bottom:1.8rem;
+}
+.reviews__head h2{
+  margin:0;
+  font-family:"Archivo",sans-serif;
+  font-weight:900;
+  font-size:clamp(1.4rem,2.6vw,2rem);
+  letter-spacing:-.02em;
+  text-transform:uppercase;
+}
+.reviews__grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(min(100%,20rem),1fr));
+  gap:clamp(.8rem,1.6vw,1.2rem);
+}
+
+.review{
+  margin:0;
+  padding:1.5rem 1.4rem;
+  border:1px solid var(--line-c);
+  background:rgba(0,0,0,.02);
+}
+.review blockquote{margin:0 0 1.1rem;font-size:.95rem;line-height:1.55}
+.review figcaption{
+  font-size:.62rem;
+  letter-spacing:var(--track-md);
+  text-transform:uppercase;
+  color:var(--dim);
+}
+.review__stars{
+  display:block;
+  margin-bottom:.8rem;
+  font-size:.75rem;
+  letter-spacing:.25em;
+  color:var(--ember);
+}
+.review__stars span{opacity:.28}
+
+/* the empty state is not an error: a drop with no reviews yet should say so
+   and then ask, rather than showing a blank rectangle */
+.reviews__empty{
+  padding:1.8rem 1.5rem;
+  border:1px dashed var(--line-c);
+  font-size:.9rem;
+  color:var(--dim);
+}
+
+.rform{
+  margin-top:clamp(1.6rem,3vw,2.4rem);
+  padding:clamp(1.4rem,2.6vw,2rem);
+  border:1px solid var(--line-c);
+}
+.rform h3{
+  margin:0 0 1.3rem;
+  font-size:.66rem;
+  font-weight:500;
+  letter-spacing:var(--track-md);
+  text-transform:uppercase;
+}
+.rform__row{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:.8rem;
+  margin-bottom:.8rem;
+}
+.rform label{
+  display:block;
+  margin-bottom:.4rem;
+  font-size:.58rem;
+  letter-spacing:var(--track-md);
+  text-transform:uppercase;
+  color:var(--dim);
+}
+.rform input,.rform select,.rform textarea{
+  width:100%;
+  padding:.75rem .8rem;
+  border:1px solid var(--line-c);
+  background:transparent;
+  color:var(--fg);
+  font:inherit;
+  font-size:.88rem;
+  border-radius:0;
+  transition:border-color .3s var(--ease);
+}
+.rform input:focus,.rform select:focus,.rform textarea:focus{
+  outline:none;
+  border-color:var(--fg);
+}
+.rform textarea{min-height:7rem;resize:vertical}
+.rform__foot{
+  margin-top:1.1rem;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:1rem;
+  flex-wrap:wrap;
+}
+.rform__note{margin:0;font-size:.72rem;color:var(--dim);max-width:34ch}
+.rform__msg{
+  margin:1rem 0 0;
+  padding:.9rem 1rem;
+  border-left:2px solid var(--ember);
+  font-size:.85rem;
+  color:var(--dim);
+}
+.rform__msg[hidden]{display:none}
+.rform button[disabled]{opacity:.5;cursor:default}
+
+/* Shown instead of the form until config.js has the Supabase values. The
+   route to leave a review still has to exist while the backend does not. */
+.rform--offline{border-style:dashed}
+/* the buttons grow to fill their row, and this row is the full page width, so
+   without a cap they read as two enormous slabs */
+.rform--offline .panel__actions{margin-top:1.3rem;max-width:38rem}
+.rform--offline .rform__note{max-width:52ch}
+
+/* the honeypot must be gone for people and present for bots, so it is moved
+   off screen rather than display:none, which some bots skip */
+.rform__hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+
+.pdp__next{
+  display:flex;
+  justify-content:space-between;
+  gap:1.5rem;
+  flex-wrap:wrap;
+  margin-top:clamp(2.5rem,5vw,4rem);
+  padding-top:1.6rem;
+  border-top:1px solid var(--line-c);
+}
+
+/* ============================================================
+   lookbook page
+   Vertical editorial scroll. Every frame carries one line of
+   brand meaning, bottom left, always visible.
+   ============================================================ */
+
+.lb{display:grid;gap:clamp(.6rem,1.4vw,1.2rem);padding-bottom:clamp(3rem,7vw,6rem)}
+
+.lb__frame{
+  margin:0;
+  position:relative;
+  overflow:hidden;
+  background:linear-gradient(150deg,var(--ink-3),var(--ink-2));
+}
+.lb__frame img{
+  width:100%;height:100%;
+  object-fit:cover;
+  transition:transform 1.4s var(--ease);
+}
+.lb__frame:hover img{transform:scale(1.03)}
+
+/* three shapes, so a long scroll of one aspect ratio never sets in */
+.lb__frame--tall{aspect-ratio:4/5}
+.lb__frame--wide{aspect-ratio:16/9}
+.lb__frame--full{aspect-ratio:3/2}
+
+.lb__row{display:grid;grid-template-columns:1fr 1fr;gap:clamp(.6rem,1.4vw,1.2rem)}
+
+.lb__cap{
+  position:absolute;
+  left:0;right:0;bottom:0;
+  padding:4rem clamp(1.2rem,3vw,2.2rem) clamp(1.1rem,2vw,1.6rem);
+  display:flex;
+  align-items:baseline;
+  gap:1rem;
+  text-align:left;
+  background:linear-gradient(to top,rgba(6,6,6,.88),rgba(6,6,6,.35) 45%,transparent);
+}
+.lb__cap b{
+  flex:none;
+  font-family:"Archivo",sans-serif;
+  font-weight:900;
+  font-size:.72rem;
+  letter-spacing:.02em;
+  color:var(--ember);
+}
+.lb__cap span{
+  font-size:clamp(.78rem,1.5vw,1rem);
+  font-weight:400;
+  letter-spacing:.01em;
+  color:var(--paper);
+  max-width:44ch;
+}
+.lb__cap i{
+  display:block;
+  font-style:normal;
+  margin-top:.25rem;
+  font-size:.64rem;
+  letter-spacing:var(--track-md);
+  text-transform:uppercase;
+  color:var(--paper-dim);
+}
+
+.lb__end{
+  display:grid;
+  grid-template-columns:1.2fr .8fr;
+  align-items:center;
+  gap:clamp(1.5rem,3vw,3rem);
+  margin-top:clamp(3rem,6vw,5rem);
+  padding-top:clamp(2rem,4vw,3rem);
+  padding-bottom:clamp(2rem,5vw,4rem);
+  border-top:1px solid var(--line-c);
+}
+.lb__end p{margin:0;max-width:40ch;font-size:.92rem;color:var(--dim)}
 
 /* ── statement strip ────────────────────────────────────── */
 
@@ -1243,6 +1639,90 @@ body.is-locked{overflow:hidden}
   margin:.4rem 0 0;
   max-width:50ch;
   font-size:clamp(.95rem,1.4vw,1.06rem);
+  color:var(--dim);
+}
+
+/* ── ethos + contact pages ──────────────────────────────── */
+
+.ethos__facts,.contact__studio{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:clamp(1.6rem,3vw,3rem);
+  margin:clamp(2rem,4vw,3.5rem) 0 clamp(3rem,6vw,5rem);
+  padding-top:clamp(1.6rem,3vw,2.4rem);
+  border-top:1px solid var(--line-c);
+}
+.ethos__facts p:not(.footer__label),
+.contact__studio p:not(.footer__label){margin:0 0 .4rem;font-size:.92rem;color:var(--dim)}
+
+/* the two order channels, as panels rather than buttons: on this page they
+   are the content, not a call to action stuck under some */
+.channels{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:clamp(.8rem,1.6vw,1.4rem);
+}
+.channel{
+  display:grid;
+  align-content:start;
+  gap:.7rem;
+  padding:clamp(1.8rem,3vw,2.6rem);
+  border:1px solid var(--line-c);
+  background:linear-gradient(140deg,var(--ink-3),var(--ink-2) 70%,var(--ink));
+  transition:border-color .4s var(--ease),transform .5s var(--ease);
+}
+.channel:hover{border-color:var(--paper);transform:translateY(-3px)}
+.channel__no{
+  font-family:"Archivo",sans-serif;
+  font-weight:900;
+  font-size:.72rem;
+  color:var(--ember);
+}
+.channel h2{
+  margin:0;
+  font-family:"Archivo",sans-serif;
+  font-weight:900;
+  font-size:clamp(1.5rem,3vw,2.2rem);
+  line-height:1;
+  letter-spacing:-.025em;
+  text-transform:uppercase;
+}
+.channel p{margin:0;max-width:36ch;font-size:.92rem;color:var(--dim)}
+.channel__go{
+  margin-top:.6rem;
+  font-size:.64rem;
+  letter-spacing:var(--track-md);
+  text-transform:uppercase;
+}
+.channel__go::after{content:" \2192"}
+
+.faq{margin-top:clamp(3rem,6vw,5rem)}
+.faq__item{border-bottom:1px solid var(--line-c)}
+.faq__item summary{
+  list-style:none;
+  cursor:pointer;
+  padding:1.2rem 0;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:1.5rem;
+  font-size:.92rem;
+  transition:color .35s var(--ease);
+}
+.faq__item summary::-webkit-details-marker{display:none}
+.faq__item summary::after{
+  content:"+";
+  flex:none;
+  font-size:1rem;
+  color:var(--ember);
+  transition:transform .4s var(--ease);
+}
+.faq__item[open] summary::after{transform:rotate(45deg)}
+.faq__item summary:hover{color:var(--ember)}
+.faq__item div{
+  padding:0 0 1.4rem;
+  max-width:62ch;
+  font-size:.92rem;
   color:var(--dim);
 }
 
@@ -1476,11 +1956,23 @@ body.is-locked{overflow:hidden}
 @media (max-width:900px){
   .nav__links{display:none}
   .nav__cta{display:none}
-  .burger{display:block}
-  .nav__inner{justify-content:space-between}
+  .burger{display:grid;place-items:center}
+  /* burger left, wordmark centred, icons right: the reference's phone layout */
+  .nav__inner{grid-template-columns:1fr auto 1fr}
+  .burger{grid-column:1;justify-self:start}
 
-  .pv__sheet{grid-template-columns:1fr;grid-template-rows:38vh 1fr;width:100%}
-  .pv__media img{object-position:center 30%}
+  .pdp__grid{grid-template-columns:1fr;gap:1.8rem}
+  .pdp__panel{position:static}
+  .pdp__detail{grid-template-columns:1fr}
+
+  .rform__row{grid-template-columns:1fr 1fr}
+
+  .lb__row{grid-template-columns:1fr}
+  .brief{grid-template-columns:1fr;gap:1.8rem}
+  .shop__foot,.lb__end{grid-template-columns:1fr}
+  .shop__footcta{justify-content:flex-start}
+  .channels{grid-template-columns:1fr}
+  .ethos__facts,.contact__studio{grid-template-columns:1fr;gap:1.6rem}
 
   .strip{grid-template-columns:1fr}
   .strip__copy p{max-width:none}
@@ -1500,10 +1992,16 @@ body.is-locked{overflow:hidden}
 @media (max-width:560px){
   :root{--track-xl:.3em;--track-lg:.22em}
 
-  .hero{min-height:92svh;padding-block:7rem}
-  .hero__actions{flex-direction:column;align-items:stretch}
+  .hero{min-height:92svh;padding-top:7rem}
+  /* the two doors stay on one line, they just get tighter */
+  .hero__actions{gap:.6rem}
+  .hero__actions .btn{padding-inline:1rem;min-width:0;flex:1 1 0}
   .hero__coord{display:none}
   .hero__foot{justify-content:center}
+
+  .page{padding-top:5.6rem}
+  .rform__row{grid-template-columns:1fr}
+  .lb__cap{padding-bottom:1rem}
   /* a 32% inset on a phone leaves a sliver, open it wider */
   .js .hero__mask{clip-path:inset(0 18% 0 18%)}
 
