@@ -1,19 +1,21 @@
-/* VALLORA · cart
+/* VALLORA · cart and checkout
    ---------------------------------------------------------------------------
-   A shop with no accounts, no checkout provider and no server. The cart lives
-   in localStorage, and "checkout" composes the whole order as a WhatsApp
-   message: pieces, sizes, quantities, totals and the buyer's details.
+   The flow is the ordinary one: choose a size on the piece, add to cart, review
+   the cart, go to checkout, fill in where it is going, send. The only unusual
+   step is the last one. There is no payment provider and no server, so
+   "place order" opens WhatsApp with the entire order already written out:
+   every piece, its size, its quantity, the total, and the buyer's details.
 
    Unlike the rest of the site this is NOT an enhancement, because a cart with
    no scripting is not a cart. That is also why the bag button and the drawer
-   are injected from here rather than written into all nine pages: there is no
-   no-script state for them to fall back to, and one source of truth beats nine
-   copies that drift. Every page keeps a working DM and WhatsApp link in its
-   markup, so a visitor with scripting off can still order the old way.
+   are injected from here rather than written into every page: there is no
+   no-script state for them to fall back to, and one source of truth beats ten
+   copies that drift. Every page keeps a working WhatsApp and Instagram link in
+   its markup, so a visitor with scripting off can still order the old way.
 
    Prices are optional by design. A piece with no price in config.js shows
-   "Price over DM", still goes in the cart, and the order message asks us to
-   confirm the total. Nothing here invents a number.                          */
+   "Price over DM", still goes in the cart, and the order asks us to confirm the
+   total. Nothing here invents a number.                                       */
 
 (function () {
   'use strict';
@@ -80,8 +82,8 @@
   }
 
   function total() {
-    // returns null when any line has no price, because a partial total is worse
-    // than no total: it reads as the amount owed
+    // null when any line has no price: a partial total is worse than none,
+    // because it reads as the amount owed
     var items = read();
     if (!items.length) return null;
     var sum = 0;
@@ -95,7 +97,7 @@
 
   function add(item) {
     var items = read();
-    // same piece in the same size is one line with a bigger number, not two
+    // the same piece in the same size is one line with a bigger number
     var hit = items.filter(function (i) {
       return i.slug === item.slug && i.size === item.size;
     })[0];
@@ -147,11 +149,90 @@
   function waNumber() {
     var n = (CFG.whatsapp || '').replace(/[^\d]/g, '');
     if (n) return n;
-    // fall back to whatever number the markup carries, so the button still
-    // goes somewhere real before config.js is filled in
+    // fall back to whatever number the markup carries, so the button still goes
+    // somewhere real before config.js is filled in
     var a = $('a[href*="wa.me/"]');
     var m = a ? (a.getAttribute('href') || '').match(/wa\.me\/(\d+)/) : null;
     return m ? m[1] : '';
+  }
+
+  function orderHref() {
+    var num = waNumber();
+    return num ? 'https://wa.me/' + num + '?text=' + encodeURIComponent(orderText()) : '#';
+  }
+
+  /* ── shared line rendering ─────────────────────────────── */
+
+  /* Both the drawer and the checkout page list the same lines, so they share
+     one builder. `full` adds the per-line total column that the wide layout
+     has room for. */
+  function lineEl(i, full) {
+    var p = priceOf(i.slug);
+
+    var li = doc.createElement('li');
+    li.className = 'cart__item';
+    li.setAttribute('data-slug', i.slug);
+    li.setAttribute('data-size', i.size);
+    li.setAttribute('data-qty', String(i.qty));
+
+    var thumb = doc.createElement('a');
+    thumb.className = 'cart__thumb';
+    thumb.href = ROOT + i.href;
+    var img = doc.createElement('img');
+    img.src = ROOT + i.img;
+    img.alt = '';
+    thumb.appendChild(img);
+
+    var body = doc.createElement('div');
+    body.className = 'cart__lines';
+
+    var name = doc.createElement('a');
+    name.className = 'cart__name';
+    name.href = ROOT + i.href;
+    name.textContent = i.name;     // names come from our own markup, but
+    body.appendChild(name);        // textContent keeps that true forever
+
+    var meta = doc.createElement('p');
+    meta.className = 'cart__meta';
+    meta.textContent = 'Size ' + i.size + (p ? ' . ' + money(p) + ' each' : ' . price over DM');
+    body.appendChild(meta);
+
+    var row = doc.createElement('div');
+    row.className = 'cart__qty';
+    row.innerHTML =
+      '<button type="button" data-act="dec" aria-label="One fewer">&minus;</button>' +
+      '<span>' + i.qty + '</span>' +
+      '<button type="button" data-act="inc" aria-label="One more">+</button>' +
+      '<button type="button" class="cart__del" data-act="del">Remove</button>';
+    body.appendChild(row);
+
+    li.appendChild(thumb);
+    li.appendChild(body);
+
+    if (full && p) {
+      var line = doc.createElement('p');
+      line.className = 'cart__line';
+      line.textContent = money(p * i.qty);
+      li.appendChild(line);
+    }
+
+    return li;
+  }
+
+  function wireLineButtons(listEl) {
+    listEl.addEventListener('click', function (e) {
+      var btn = e.target.closest ? e.target.closest('[data-act]') : null;
+      if (!btn) return;
+      var li = btn.closest('li');
+      var slug = li.getAttribute('data-slug');
+      var size = li.getAttribute('data-size');
+      var qty = parseInt(li.getAttribute('data-qty'), 10);
+      var act = btn.getAttribute('data-act');
+
+      if (act === 'inc') setQty(slug, size, Math.min(20, qty + 1));
+      if (act === 'dec') setQty(slug, size, qty - 1);
+      if (act === 'del') remove(slug, size);
+    });
   }
 
   /* ── the drawer ────────────────────────────────────────── */
@@ -192,29 +273,15 @@
         '<div class="cart__body">' +
           '<ul class="cart__list" data-cart-list></ul>' +
           '<p class="cart__empty" data-cart-empty>Nothing in the cart yet.</p>' +
-
-          '<div class="cart__details" data-cart-details>' +
-            '<h3>Where is it going?</h3>' +
-            '<div class="rform__row">' +
-              '<div><label for="c-name">Name</label>' +
-                '<input id="c-name" name="name" type="text" maxlength="60" autocomplete="name"></div>' +
-              '<div><label for="c-phone">Phone</label>' +
-                '<input id="c-phone" name="phone" type="tel" maxlength="30" autocomplete="tel"></div>' +
-              '<div><label for="c-city">City</label>' +
-                '<input id="c-city" name="city" type="text" maxlength="60" autocomplete="address-level2"></div>' +
-            '</div>' +
-            '<label for="c-notes">Notes <span>(optional)</span></label>' +
-            '<textarea id="c-notes" name="notes" maxlength="300" ' +
-              'placeholder="Anything we should know: address, a landmark, a delivery time."></textarea>' +
-          '</div>' +
+          '<p class="cart__keep"><a href="' + ROOT + 'shop/">Keep shopping</a></p>' +
         '</div>' +
 
         '<footer class="cart__foot">' +
           '<div class="cart__total" data-cart-total></div>' +
-          '<p class="cart__err" data-cart-err hidden></p>' +
-          '<a class="btn btn--solid cart__send" data-cart-send href="#">Send order on WhatsApp</a>' +
-          '<p class="cart__note">No account, no card on this site. The order opens in ' +
-            'WhatsApp with everything filled in, and we confirm it by message.</p>' +
+          '<a class="btn btn--solid cart__send" data-cart-checkout href="' + ROOT + 'checkout/">' +
+            'Checkout</a>' +
+          '<p class="cart__note">Next step is where it is going. No account and no ' +
+            'card: the finished order opens in WhatsApp.</p>' +
         '</footer>' +
       '</aside>';
 
@@ -223,62 +290,16 @@
     el.wrap = wrap;
     el.list = $('[data-cart-list]', wrap);
     el.empty = $('[data-cart-empty]', wrap);
-    el.details = $('[data-cart-details]', wrap);
+    el.keep = $('.cart__keep', wrap);
     el.totalBox = $('[data-cart-total]', wrap);
-    el.send = $('[data-cart-send]', wrap);
-    el.err = $('[data-cart-err]', wrap);
+    el.checkout = $('[data-cart-checkout]', wrap);
     el.headCount = $('[data-cart-count]', wrap);
 
     $$('[data-cart-close]', wrap).forEach(function (b) {
       b.addEventListener('click', close);
     });
 
-    // buyer fields remember themselves, so a returning customer types once
-    var b = readBuyer();
-    ['name', 'phone', 'city', 'notes'].forEach(function (f) {
-      var input = $('[name="' + f + '"]', wrap);
-      if (!input) return;
-      if (b[f]) input.value = b[f];
-      input.addEventListener('input', function () {
-        var cur = readBuyer();
-        cur[f] = input.value;
-        writeBuyer(cur);
-        // the send link carries the whole message, so it has to be rebuilt on
-        // every keystroke. without this the order arrives with no name on it.
-        render();
-      });
-    });
-
-    el.list.addEventListener('click', function (e) {
-      var btn = e.target.closest ? e.target.closest('[data-act]') : null;
-      if (!btn) return;
-      var li = btn.closest('li');
-      var slug = li.getAttribute('data-slug');
-      var size = li.getAttribute('data-size');
-      var qty = parseInt(li.getAttribute('data-qty'), 10);
-      var act = btn.getAttribute('data-act');
-
-      if (act === 'inc') setQty(slug, size, Math.min(20, qty + 1));
-      if (act === 'dec') setQty(slug, size, qty - 1);
-      if (act === 'del') remove(slug, size);
-    });
-
-    el.send.addEventListener('click', function (e) {
-      var items = read();
-      if (!items.length) { e.preventDefault(); return; }
-
-      var b2 = readBuyer();
-      if (!b2.name || !b2.phone) {
-        e.preventDefault();
-        el.err.textContent = 'A name and a phone number, so we know who the order is for.';
-        el.err.hidden = false;
-        var f = !b2.name ? $('[name="name"]', el.wrap) : $('[name="phone"]', el.wrap);
-        if (f) f.focus();
-        return;
-      }
-      el.err.hidden = true;
-      // href is rebuilt on every render, so the click just follows it
-    });
+    wireLineButtons(el.list);
 
     doc.addEventListener('keydown', function (e) {
       if (e.key === 'Escape' && !wrap.hidden) close();
@@ -326,6 +347,89 @@
     setTimeout(done, 700);   // hidden tabs never fire transitionend
   }
 
+  /* ── checkout page ─────────────────────────────────────── */
+
+  var co = {};
+
+  function buildCheckout() {
+    var root = $('[data-checkout]');
+    if (!root) return;
+
+    co.root = root;
+    co.list = $('[data-co-list]', root);
+    co.empty = $('[data-co-empty]', root);
+    co.filled = $('[data-co-filled]', root);
+    co.totalBox = $('[data-co-total]', root);
+    co.send = $('[data-co-send]', root);
+    co.err = $('[data-co-err]', root);
+
+    wireLineButtons(co.list);
+
+    // the buyer fields are the same store the drawer used to hold, so a
+    // customer who filled them in once never types them again
+    var b = readBuyer();
+    ['name', 'phone', 'city', 'notes'].forEach(function (f) {
+      var input = $('[name="' + f + '"]', root);
+      if (!input) return;
+      if (b[f]) input.value = b[f];
+      input.addEventListener('input', function () {
+        var cur = readBuyer();
+        cur[f] = input.value;
+        writeBuyer(cur);
+        // the send link carries the entire message, so it has to be rebuilt on
+        // every keystroke. without this the order arrives with no name on it.
+        render();
+      });
+    });
+
+    co.send.addEventListener('click', function (e) {
+      if (!read().length) { e.preventDefault(); return; }
+
+      var b2 = readBuyer();
+      if (!b2.name || !String(b2.name).trim() || !b2.phone || !String(b2.phone).trim()) {
+        e.preventDefault();
+        co.err.textContent = 'A name and a phone number, so we know whose order this is.';
+        co.err.hidden = false;
+        var f = !b2.name ? $('[name="name"]', root) : $('[name="phone"]', root);
+        if (f) { f.focus(); f.scrollIntoView({ block: 'center' }); }
+        return;
+      }
+      co.err.hidden = true;
+    });
+  }
+
+  function renderCheckout() {
+    if (!co.list) return;
+    var items = read();
+
+    co.list.textContent = '';
+    items.forEach(function (i) { co.list.appendChild(lineEl(i, true)); });
+
+    co.empty.hidden = items.length > 0;
+    if (co.filled) co.filled.hidden = items.length === 0;
+
+    var t = total();
+    if (!items.length) {
+      co.totalBox.textContent = '';
+    } else if (t !== null) {
+      co.totalBox.innerHTML =
+        '<div class="sum__row"><span>Subtotal</span><span>' + money(t) + '</span></div>' +
+        '<div class="sum__row"><span>Delivery</span><span>Confirmed by message</span></div>' +
+        '<div class="sum__row sum__row--big"><span>Total</span><strong>' + money(t) + '</strong></div>';
+    } else {
+      co.totalBox.innerHTML =
+        '<div class="sum__row"><span>Subtotal</span><span>Price over DM</span></div>' +
+        '<div class="sum__row"><span>Delivery</span><span>Confirmed by message</span></div>' +
+        '<div class="sum__row sum__row--big"><span>Total</span><strong>Confirmed by message</strong></div>';
+    }
+
+    co.send.href = orderHref();
+    co.send.setAttribute('target', '_blank');
+    co.send.setAttribute('rel', 'noopener');
+    if (!items.length) co.send.setAttribute('aria-disabled', 'true');
+    else co.send.removeAttribute('aria-disabled');
+  }
+
   /* ── render ────────────────────────────────────────────── */
 
   function render() {
@@ -337,83 +441,28 @@
       b.hidden = n === 0;
     });
 
+    renderCheckout();
+
     if (!el.list) return;
 
     if (el.headCount) el.headCount.textContent = n ? '(' + n + ')' : '';
     el.empty.hidden = items.length > 0;
-    el.details.hidden = items.length === 0;
+    if (el.keep) el.keep.hidden = items.length === 0;
+
     el.list.textContent = '';
-
-    items.forEach(function (i) {
-      var p = priceOf(i.slug);
-
-      var li = doc.createElement('li');
-      li.className = 'cart__item';
-      li.setAttribute('data-slug', i.slug);
-      li.setAttribute('data-size', i.size);
-      li.setAttribute('data-qty', String(i.qty));
-
-      var a = doc.createElement('a');
-      a.className = 'cart__thumb';
-      a.href = ROOT + i.href;
-      var img = doc.createElement('img');
-      img.src = ROOT + i.img;
-      img.alt = '';
-      a.appendChild(img);
-
-      var body = doc.createElement('div');
-      body.className = 'cart__lines';
-
-      var name = doc.createElement('a');
-      name.className = 'cart__name';
-      name.href = ROOT + i.href;
-      name.textContent = i.name;      // product names come from our own markup,
-      body.appendChild(name);         // but textContent keeps that true forever
-
-      var meta = doc.createElement('p');
-      meta.className = 'cart__meta';
-      meta.textContent = 'Size ' + i.size + (p ? ' . ' + money(p) : ' . price over DM');
-      body.appendChild(meta);
-
-      var row = doc.createElement('div');
-      row.className = 'cart__qty';
-      row.innerHTML =
-        '<button type="button" data-act="dec" aria-label="One fewer">&minus;</button>' +
-        '<span>' + i.qty + '</span>' +
-        '<button type="button" data-act="inc" aria-label="One more">+</button>' +
-        '<button type="button" class="cart__del" data-act="del">Remove</button>';
-      body.appendChild(row);
-
-      li.appendChild(a);
-      li.appendChild(body);
-
-      if (p) {
-        var line = doc.createElement('p');
-        line.className = 'cart__line';
-        line.textContent = money(p * i.qty);
-        li.appendChild(line);
-      }
-
-      el.list.appendChild(li);
-    });
+    items.forEach(function (i) { el.list.appendChild(lineEl(i, false)); });
 
     var t = total();
     if (!items.length) {
       el.totalBox.textContent = '';
     } else if (t !== null) {
-      el.totalBox.innerHTML = '<span>Total</span><strong>' + money(t) + '</strong>';
+      el.totalBox.innerHTML = '<span>Subtotal</span><strong>' + money(t) + '</strong>';
     } else {
-      el.totalBox.innerHTML = '<span>Total</span><strong>Confirmed by message</strong>';
+      el.totalBox.innerHTML = '<span>Subtotal</span><strong>Confirmed by message</strong>';
     }
 
-    var num = waNumber();
-    el.send.href = num
-      ? 'https://wa.me/' + num + '?text=' + encodeURIComponent(orderText())
-      : '#';
-    el.send.setAttribute('target', '_blank');
-    el.send.setAttribute('rel', 'noopener');
-    if (!items.length) el.send.setAttribute('aria-disabled', 'true');
-    else el.send.removeAttribute('aria-disabled');
+    if (!items.length) el.checkout.setAttribute('aria-disabled', 'true');
+    else el.checkout.removeAttribute('aria-disabled');
   }
 
   /* ── prices on grid cards, anywhere on the site ────────── */
@@ -438,7 +487,6 @@
     var img = pdp.getAttribute('data-img') || '';
     var href = pdp.getAttribute('data-href') || '';
 
-    // price, straight from config
     var p = priceOf(slug);
     $$('[data-price-slot]').forEach(function (n2) {
       n2.textContent = p ? money(p) : 'Price over DM';
@@ -497,6 +545,7 @@
   /* ── go ────────────────────────────────────────────────── */
 
   build();
+  buildCheckout();
   paintPrices();
   wireProduct();
   render();

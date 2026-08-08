@@ -10,6 +10,7 @@ shop/fearless-soul-tee.html       the one real product page
 shop/piece-02.html                placeholder product pages
 shop/piece-03.html
 shop/piece-04.html
+checkout/index.html               order review, details, send
 lookbook/index.html               vertical scroll, captions bottom left
 ethos/index.html
 contact/index.html
@@ -28,12 +29,23 @@ one, change all nine. Everything else is shared through the stylesheet and the
 one script, which guards on the elements each block needs, so the same
 `main.js` runs the landing, a product page and the lookbook.
 
-## The cart
+## The cart and checkout
 
-A shop with no accounts, no card fields and no server. The cart lives in
-`localStorage`, and checkout composes the whole order as a WhatsApp message:
-every piece, its size, its quantity, the total when prices are set, and the
-buyer's name, phone, city and notes.
+The flow is the ordinary one:
+
+```
+piece → pick a size and a quantity → add to cart → cart drawer
+      → /checkout/ → name, phone, city, notes → send
+```
+
+Only the last step is unusual. There is no payment provider and no server, so
+"send" opens WhatsApp with the entire order already written out: every piece,
+its size, its quantity, the total when prices are set, and the buyer's details.
+The cart lives in `localStorage` and survives moving between pages.
+
+The drawer is a summary and a way back in, not the end of the road: its button
+goes to `/checkout/`. Quantities can be edited in either place and the order
+message rebuilds from whichever one you touched.
 
 Unlike everything else here `cart.js` is **not** an enhancement, because a cart
 with no scripting is not a cart. That is also why the bag button and the drawer
@@ -274,13 +286,15 @@ Supabase project does not exist yet: config and `fetch` are overridden before an
 page script runs, then 21 assertions cover rendering, the star row, the submit
 payload, the honeypot, and the injection test described above.
 
-The cart has its own 35-assertion suite, run twice over: once with no prices set,
-which is the state the shop ships in, and once with prices injected, because the
-two produce different totals and a different order message. It covers refusing to
-add without a size, quantity, merging a repeat of the same size into one line,
-surviving navigation between pages, refusing to send without a name and phone,
-and the composed message carrying every piece, size, quantity, total and buyer
-field.
+The cart and checkout have their own 43-assertion suite, run twice over: once
+with no prices set, which is the state the shop ships in, and once with prices
+injected, because the two produce different totals and a different order
+message. It walks the whole flow: refusing to add without a size, the quantity
+stepper, merging a repeat of the same size into one line, surviving navigation
+between pages, the drawer handing off to checkout, editing quantities on the
+checkout page, the empty state when the cart is cleared, refusing to send
+without a name and phone, and the composed message carrying every piece, size,
+quantity, total and buyer field.
 
 A local server is needed for any of it, because `file://` cannot resolve
 `/shop/` to `/shop/index.html`, which is exactly the thing that has to be tested.

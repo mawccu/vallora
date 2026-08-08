@@ -1193,37 +1193,10 @@ body.is-locked{overflow:hidden}
 }
 .cart__del:hover{color:var(--fg)}
 
-.cart__details{margin-top:1.8rem}
-.cart__details[hidden]{display:none}
-.cart__details h3{
-  margin:0 0 1.1rem;
-  font-size:.66rem;
-  font-weight:500;
-  letter-spacing:var(--track-md);
-  text-transform:uppercase;
-}
-.cart__details label{
-  display:block;
-  margin-bottom:.4rem;
-  font-size:.58rem;
-  letter-spacing:var(--track-md);
-  text-transform:uppercase;
-  color:var(--dim);
-}
-.cart__details input,.cart__details textarea{
-  width:100%;
-  padding:.7rem .8rem;
-  border:1px solid var(--line-c);
-  background:transparent;
-  color:var(--fg);
-  font:inherit;
-  font-size:.88rem;
-  border-radius:0;
-  transition:border-color .3s var(--ease);
-}
-.cart__details input:focus,.cart__details textarea:focus{outline:none;border-color:var(--fg)}
-.cart__details textarea{min-height:5rem;resize:vertical}
-.cart__details .rform__row{grid-template-columns:1fr;gap:.8rem}
+.cart__keep{margin:1.4rem 0 0;font-size:.72rem;letter-spacing:var(--track-md);text-transform:uppercase}
+.cart__keep[hidden]{display:none}
+.cart__keep a{border-bottom:1px solid var(--line-c);padding-bottom:2px;color:var(--dim)}
+.cart__keep a:hover{color:var(--fg);border-color:var(--fg)}
 
 .cart__foot{
   flex:none;
@@ -1251,7 +1224,104 @@ body.is-locked{overflow:hidden}
   text-transform:none;
 }
 .cart__send{width:100%}
-.cart__send[aria-disabled="true"]{opacity:.4;pointer-events:none}
+.cart__send[aria-disabled="true"],
+.sum__send[aria-disabled="true"]{opacity:.4;pointer-events:none}
+
+/* ============================================================
+   checkout page
+   ============================================================ */
+
+.checkout{padding-bottom:clamp(3rem,7vw,5rem)}
+.checkout .page-head{padding-bottom:clamp(1.5rem,3vw,2.5rem)}
+
+.checkout__empty{
+  padding:clamp(2rem,4vw,3rem);
+  border:1px dashed var(--line-c);
+  max-width:44rem;
+}
+.checkout__empty[hidden]{display:none}
+.checkout__empty p{margin:0 0 1.8rem;color:var(--dim);max-width:40ch}
+
+.checkout__grid{
+  display:grid;
+  grid-template-columns:1.35fr .65fr;
+  gap:clamp(2rem,4vw,3.5rem);
+  align-items:start;
+}
+.checkout__grid[hidden]{display:none}
+
+.checkout__main{display:grid;gap:clamp(2rem,4vw,3rem)}
+
+/* the wide list has room for a per-line total, the drawer does not */
+.cart__list--wide{border-top:1px solid var(--line-c);padding-top:1.4rem}
+.cart__list--wide .cart__item{grid-template-columns:88px 1fr auto}
+
+.checkout__keep{margin:1.4rem 0 0}
+
+.checkout__details label{
+  display:block;
+  margin-bottom:.4rem;
+  font-size:.58rem;
+  letter-spacing:var(--track-md);
+  text-transform:uppercase;
+  color:var(--dim);
+}
+.checkout__details label span{text-transform:none;letter-spacing:.02em}
+.checkout__details input,.checkout__details textarea{
+  width:100%;
+  padding:.8rem .9rem;
+  border:1px solid var(--line-c);
+  background:transparent;
+  color:var(--fg);
+  font:inherit;
+  font-size:.9rem;
+  border-radius:0;
+  transition:border-color .3s var(--ease);
+}
+.checkout__details input:focus,.checkout__details textarea:focus{outline:none;border-color:var(--fg)}
+.checkout__details textarea{min-height:6rem;resize:vertical}
+.checkout__details .note{margin:0 0 1.4rem}
+.rform__row--three{margin-bottom:1.2rem}
+
+/* the summary follows you down the page */
+.sum{
+  position:sticky;
+  top:7rem;
+  padding:clamp(1.4rem,2.6vw,2rem);
+  border:1px solid var(--line-c);
+  background:rgba(0,0,0,.02);
+}
+.sum__rows{margin-bottom:1.4rem}
+.sum__row{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:1rem;
+  padding:.6rem 0;
+  font-size:.8rem;
+  color:var(--dim);
+  border-bottom:1px solid var(--line-c);
+}
+.sum__row--big{
+  border-bottom:0;
+  padding-top:1rem;
+  font-size:.66rem;
+  letter-spacing:var(--track-md);
+  text-transform:uppercase;
+}
+.sum__row--big strong{
+  font-family:"Archivo",sans-serif;
+  font-weight:900;
+  font-size:1.2rem;
+  letter-spacing:-.01em;
+  color:var(--fg);
+  text-transform:none;
+}
+.sum__send{width:100%}
+.sum__note{margin:1.2rem 0 0;font-size:.74rem;line-height:1.55;color:var(--dim)}
+.sum__alt{margin:.9rem 0 0;font-size:.74rem;color:var(--dim)}
+.sum__alt a{border-bottom:1px solid var(--line-c)}
+.sum__alt a:hover{color:var(--fg);border-color:var(--fg)}
 .cart__err{
   margin:0 0 .8rem;
   font-size:.78rem;
@@ -2267,6 +2337,10 @@ body.is-locked{overflow:hidden}
 
   .rform__row{grid-template-columns:1fr 1fr}
 
+  .checkout__grid{grid-template-columns:1fr}
+  /* the summary stops following and simply sits after the form */
+  .sum{position:static}
+
   .lb__row{grid-template-columns:1fr}
   .brief{grid-template-columns:1fr;gap:1.8rem}
   .shop__foot,.lb__end{grid-template-columns:1fr}
@@ -2301,6 +2375,8 @@ body.is-locked{overflow:hidden}
 
   .page{padding-top:5.6rem}
   .rform__row{grid-template-columns:1fr}
+  .cart__list--wide .cart__item{grid-template-columns:64px 1fr}
+  .cart__list--wide .cart__line{grid-column:2;margin-top:.4rem}
   .lb__cap{padding-bottom:1rem}
   /* a 32% inset on a phone leaves a sliver, open it wider */
   .js .hero__mask{clip-path:inset(0 18% 0 18%)}
