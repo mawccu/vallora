@@ -1047,6 +1047,306 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 body.is-locked{overflow:hidden}
 
 /* ============================================================
+   CART
+   No accounts, no card fields. The cart is local, and checkout
+   composes the whole order as a WhatsApp message.
+   ============================================================ */
+
+/* the bag lives in the nav and is injected by cart.js, because a cart with no
+   scripting is not a cart and there is no markup fallback to write */
+.bag{
+  position:relative;
+  display:grid;place-items:center;
+  width:34px;height:34px;
+  color:var(--dim);
+  transition:color .35s var(--ease);
+}
+.bag:hover{color:var(--paper)}
+.bag svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linejoin:round}
+.bag__n{
+  position:absolute;top:-2px;right:-4px;
+  min-width:16px;height:16px;
+  padding:0 4px;
+  border-radius:9px;
+  background:var(--ember);
+  color:var(--ink);
+  font-size:.56rem;
+  font-weight:500;
+  line-height:16px;
+  text-align:center;
+}
+.bag__n[hidden]{display:none}
+
+.cart{position:fixed;inset:0;z-index:395}
+.cart[hidden]{display:none}
+
+.cart__scrim{
+  position:absolute;inset:0;
+  background:rgba(6,6,6,.55);
+  backdrop-filter:blur(5px);
+  -webkit-backdrop-filter:blur(5px);
+  opacity:0;
+  transition:opacity .45s var(--ease);
+}
+.cart.is-open .cart__scrim{opacity:1}
+
+/* the cart is part of the store, so it takes the paper ground with it */
+.cart__panel{
+  --bg:var(--paper);
+  --fg:var(--ink);
+  --dim:#6d675e;
+  --line-c:rgba(6,6,6,.16);
+  position:absolute;top:0;right:0;
+  width:min(460px,100%);
+  height:100%;
+  display:flex;
+  flex-direction:column;
+  background:var(--bg);
+  color:var(--fg);
+  transform:translateX(100%);
+  transition:transform .55s var(--ease-mask);
+}
+.cart.is-open .cart__panel{transform:none}
+
+.cart__head{
+  flex:none;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:1rem;
+  padding:1.4rem clamp(1.2rem,3vw,1.8rem);
+  border-bottom:1px solid var(--line-c);
+}
+.cart__head h2{
+  margin:0;
+  font-size:.72rem;
+  font-weight:500;
+  letter-spacing:var(--track-md);
+  text-transform:uppercase;
+}
+.cart__head span{color:var(--dim)}
+
+.cart__close{
+  position:relative;
+  width:34px;height:34px;
+  flex:none;
+}
+.cart__close span{
+  position:absolute;left:8px;top:16px;
+  width:18px;height:1px;
+  background:var(--fg);
+}
+.cart__close span:nth-child(1){transform:rotate(45deg)}
+.cart__close span:nth-child(2){transform:rotate(-45deg)}
+
+.cart__body{
+  flex:1 1 auto;
+  overflow-y:auto;
+  overscroll-behavior:contain;
+  padding:clamp(1.2rem,3vw,1.8rem);
+}
+
+.cart__list{list-style:none;margin:0;padding:0;display:grid;gap:1.2rem}
+.cart__empty{margin:.5rem 0 0;font-size:.9rem;color:var(--dim)}
+.cart__empty[hidden]{display:none}
+
+.cart__item{
+  display:grid;
+  grid-template-columns:72px 1fr auto;
+  gap:1rem;
+  align-items:start;
+  padding-bottom:1.2rem;
+  border-bottom:1px solid var(--line-c);
+}
+.cart__thumb{display:block;aspect-ratio:4/5;overflow:hidden;background:#d8d3c9}
+.cart__thumb img{width:100%;height:100%;object-fit:cover}
+
+.cart__name{
+  display:block;
+  font-size:.72rem;
+  font-weight:500;
+  letter-spacing:var(--track-md);
+  text-transform:uppercase;
+}
+.cart__name:hover{color:var(--ember)}
+.cart__meta{margin:.35rem 0 .7rem;font-size:.76rem;color:var(--dim)}
+.cart__line{margin:0;font-size:.76rem;white-space:nowrap}
+
+.cart__qty{display:flex;align-items:center;gap:.5rem}
+.cart__qty button{
+  width:26px;height:26px;
+  border:1px solid var(--line-c);
+  font-size:.85rem;
+  line-height:1;
+  transition:border-color .3s var(--ease),background .3s var(--ease);
+}
+.cart__qty button:hover{border-color:var(--fg)}
+.cart__qty span{min-width:1.4rem;text-align:center;font-size:.8rem}
+.cart__del{
+  width:auto !important;
+  margin-left:.4rem;
+  border:0 !important;
+  font-size:.62rem !important;
+  letter-spacing:var(--track-md);
+  text-transform:uppercase;
+  color:var(--dim);
+}
+.cart__del:hover{color:var(--fg)}
+
+.cart__details{margin-top:1.8rem}
+.cart__details[hidden]{display:none}
+.cart__details h3{
+  margin:0 0 1.1rem;
+  font-size:.66rem;
+  font-weight:500;
+  letter-spacing:var(--track-md);
+  text-transform:uppercase;
+}
+.cart__details label{
+  display:block;
+  margin-bottom:.4rem;
+  font-size:.58rem;
+  letter-spacing:var(--track-md);
+  text-transform:uppercase;
+  color:var(--dim);
+}
+.cart__details input,.cart__details textarea{
+  width:100%;
+  padding:.7rem .8rem;
+  border:1px solid var(--line-c);
+  background:transparent;
+  color:var(--fg);
+  font:inherit;
+  font-size:.88rem;
+  border-radius:0;
+  transition:border-color .3s var(--ease);
+}
+.cart__details input:focus,.cart__details textarea:focus{outline:none;border-color:var(--fg)}
+.cart__details textarea{min-height:5rem;resize:vertical}
+.cart__details .rform__row{grid-template-columns:1fr;gap:.8rem}
+
+.cart__foot{
+  flex:none;
+  padding:clamp(1.2rem,3vw,1.6rem);
+  border-top:1px solid var(--line-c);
+  background:var(--bg);
+}
+.cart__total{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:1rem;
+  margin-bottom:1rem;
+  font-size:.66rem;
+  letter-spacing:var(--track-md);
+  text-transform:uppercase;
+  color:var(--dim);
+}
+.cart__total strong{
+  font-family:"Archivo",sans-serif;
+  font-weight:900;
+  font-size:1.1rem;
+  letter-spacing:-.01em;
+  color:var(--fg);
+  text-transform:none;
+}
+.cart__send{width:100%}
+.cart__send[aria-disabled="true"]{opacity:.4;pointer-events:none}
+.cart__err{
+  margin:0 0 .8rem;
+  font-size:.78rem;
+  color:#b4472f;
+}
+.cart__err[hidden]{display:none}
+.cart__note{margin:.9rem 0 0;font-size:.7rem;line-height:1.5;color:var(--dim)}
+
+/* ── buying row on a product page ───────────────────────── */
+
+/* the fit scale, per the client's reference: five marks, one filled, and
+   three labels. it reports how the piece runs, it is not a control. */
+.fit{margin:1.8rem 0}
+.fit__scale{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:.5rem;
+  margin-bottom:.7rem;
+}
+.fit__scale span{
+  height:3px;
+  background:rgba(6,6,6,.14);
+}
+.fit__scale span.is-on{background:var(--fg)}
+.fit__labels{
+  display:flex;
+  justify-content:space-between;
+  gap:1rem;
+  font-size:.6rem;
+  letter-spacing:var(--track-md);
+  text-transform:uppercase;
+  color:var(--dim);
+}
+.fit__labels span:nth-child(2){text-align:center}
+.fit__labels span:nth-child(3){text-align:right}
+
+.chip.is-out{
+  opacity:.4;
+  cursor:not-allowed;
+  text-decoration:line-through;
+}
+.chip.is-out:hover{border-color:var(--line-c)}
+
+/* asks for a size when someone adds without picking one */
+@keyframes ask{
+  0%,100%{transform:translateX(0)}
+  20%{transform:translateX(-5px)}
+  40%{transform:translateX(5px)}
+  60%{transform:translateX(-3px)}
+  80%{transform:translateX(3px)}
+}
+.chips.is-asking{animation:ask .45s var(--ease)}
+
+.buy{
+  display:grid;
+  grid-template-columns:auto 1fr;
+  gap:.7rem;
+  margin-top:1.6rem;
+}
+.qty{
+  display:flex;
+  align-items:center;
+  border:1px solid var(--fg);
+}
+.qty button{
+  width:44px;height:100%;
+  font-size:1rem;
+  line-height:1;
+  transition:background .3s var(--ease),color .3s var(--ease);
+}
+.qty button:hover{background:var(--fg);color:var(--bg)}
+.qty span{
+  min-width:2.4rem;
+  text-align:center;
+  font-size:.85rem;
+  font-variant-numeric:tabular-nums;
+}
+.buy .btn{width:100%}
+.buy__err{
+  grid-column:1/-1;
+  margin:.2rem 0 0;
+  font-size:.76rem;
+  color:#b4472f;
+}
+.buy__err[hidden]{display:none}
+
+.pdp__alt{
+  margin-top:1rem;
+  font-size:.76rem;
+  color:var(--dim);
+}
+.pdp__alt a{border-bottom:1px solid var(--line-c)}
+.pdp__alt a:hover{border-color:var(--fg);color:var(--fg)}
+
+/* ============================================================
    inner pages
    Every page except the landing opens under a solid nav and a
    page head, so the top of a page always tells you where you are.

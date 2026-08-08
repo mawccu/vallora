@@ -28,6 +28,31 @@ one, change all nine. Everything else is shared through the stylesheet and the
 one script, which guards on the elements each block needs, so the same
 `main.js` runs the landing, a product page and the lookbook.
 
+## The cart
+
+A shop with no accounts, no card fields and no server. The cart lives in
+`localStorage`, and checkout composes the whole order as a WhatsApp message:
+every piece, its size, its quantity, the total when prices are set, and the
+buyer's name, phone, city and notes.
+
+Unlike everything else here `cart.js` is **not** an enhancement, because a cart
+with no scripting is not a cart. That is also why the bag button and the drawer
+are injected from the script rather than written into all nine pages: there is
+no no-script state for them to fall back to, and one source of truth beats nine
+copies that drift. Every page still carries plain WhatsApp and Instagram links
+in its markup, so a visitor with scripting off can order the old way.
+
+Two details worth keeping:
+
+- **Paths are stored from the site root, never relative to the page.** The cart
+  renders on pages at two depths, and the site is served from `/vallora/` on
+  GitHub Pages, so `cart.js` reads its prefix off the stylesheet link rather
+  than assuming `/`.
+- **The send link is rebuilt on every keystroke** in the buyer fields, not only
+  when the cart changes. It carries the entire message, so without that the
+  order arrives with no name on it. That shipped as a bug once and is covered
+  by a test now.
+
 ## The two things that need real values
 
 Both live in `assets/js/config.js`, and nothing else has to be touched.
@@ -84,15 +109,20 @@ the publish directory and asset caching. No build command needed.
 2. **Replace the feedback quotes.** The three cards in the Feedback section are
    dashed and dimmed on purpose so they cannot ship unnoticed. Real quotes live
    in the brand's "Feedbacks" Instagram highlight. Do not invent them.
-3. **Add pricing and the size run.** Every card reads "Price over DM" because no
-   price is public. There is a `TODO` block above the shop section in
-   `index.html`.
-4. **Set the WhatsApp number** in `assets/js/config.js`. Every link on every
-   page picks it up.
-5. **Fill the shop.** Only the Fearless Soul tee is real. Pieces 02, 03 and 04
-   are dashed, greyed placeholders waiting on names, photos and prices, and the
-   size chart measurements are dashed until the brand confirms them.
-6. **Favicon.** Currently the 150px Instagram avatar. Export a proper one.
+3. **Set the WhatsApp number** in `assets/js/config.js`. Every link on every
+   page, and the cart's send button, picks it up from there.
+4. **Add prices** in the same file. Leave one at 0 and that piece reads
+   "Price over DM", still goes in the cart, and the order asks us to confirm the
+   total. No price is invented anywhere in this codebase.
+5. **Name pieces 02, 03 and 04.** They are full, orderable products already,
+   they just carry their slot number instead of a name. Renaming one means the
+   `<title>`, the `<h1>` and `data-name` on its page, plus the label on
+   `shop/index.html` and `index.html`. Leave the slug alone unless you also
+   change it in `config.js` and `supabase/setup.sql`, since that is what ties
+   orders and reviews to the piece.
+6. **Confirm the size chart.** The measurements are dashed on every product page
+   until the brand confirms them.
+7. **Favicon.** Currently the 150px Instagram avatar. Export a proper one.
 
 ## Structure
 
@@ -128,9 +158,13 @@ ordinary sentence in the markup and a dead script leaves plain paragraph text.
 
 **Product pages.** Each piece has its own page: photographs on the left, a
 buying column that sticks to the viewport as you scroll them, then the size
-chart, the wash care and the reviews across the full width. Picking a size
-rewrites the WhatsApp link with a prefilled order message, so the customer never
-types what they want.
+chart, the wash care and the reviews across the full width. Pick a size and a
+quantity, add to cart, and the drawer opens with it.
+
+**The fit scale.** Five marks with three labels, per the client's reference. It
+reports how a piece runs, it is not a control: you choose the size below it, and
+this tells you what that size will feel like. Sizes that are not in
+`config.js`'s stock list render struck through and disabled.
 
 **Lookbook** (`/lookbook/`). A vertical editorial scroll of on-body frames.
 Every frame carries its caption bottom left, always visible: one line of what
@@ -239,6 +273,14 @@ The review system is audited separately against a stubbed backend, since the
 Supabase project does not exist yet: config and `fetch` are overridden before any
 page script runs, then 21 assertions cover rendering, the star row, the submit
 payload, the honeypot, and the injection test described above.
+
+The cart has its own 35-assertion suite, run twice over: once with no prices set,
+which is the state the shop ships in, and once with prices injected, because the
+two produce different totals and a different order message. It covers refusing to
+add without a size, quantity, merging a repeat of the same size into one line,
+surviving navigation between pages, refusing to send without a name and phone,
+and the composed message carrying every piece, size, quantity, total and buyer
+field.
 
 A local server is needed for any of it, because `file://` cannot resolve
 `/shop/` to `/shop/index.html`, which is exactly the thing that has to be tested.

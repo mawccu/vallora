@@ -80,10 +80,15 @@
 <!-- data-product marks the buying context for main.js: data-name and
      data-colour are what the WhatsApp order message is written from, so a
      customer never has to type what they want. -->
+<!-- data-* is the buying context cart.js reads. img and href are written from
+     the site root, never relative to this page, because the cart renders them
+     from pages at two different depths. -->
 <main id="main" class="page store pdp"
       data-product="fearless-soul-tee"
       data-name="Fearless Soul Tee"
-      data-colour="Black">
+      data-colour="Black"
+      data-img="assets/img/vallora-04.jpg"
+      data-href="shop/fearless-soul-tee.html">
   <div class="wrap">
 
     <nav class="crumbs" aria-label="Breadcrumb">
@@ -99,20 +104,30 @@
         <figure class="pdp__shot unmask" data-delay="1">
           <img src="../assets/img/vallora-13.jpg" alt="Close detail of the VALLORA chest mark on the tee" loading="lazy">
         </figure>
-        <figure class="pdp__shot pdp__shot--wide unmask" data-delay="2">
-          <img src="../assets/img/vallora-06.jpg" alt="The tee worn with denim, full length" loading="lazy">
-        </figure>
       </div>
 
       <div class="pdp__panel">
         <p class="pdp__eyebrow">Phase 01</p>
         <h1 class="pdp__name">Fearless Soul Tee <em>[Black]</em></h1>
-        <!-- TODO: real price. Nothing is public yet, so every route is DM. -->
-        <p class="pdp__price">Price over DM</p>
+        <!-- filled from config.js. With no price set it reads "Price over DM"
+             and the cart asks us to confirm the total. -->
+        <p class="pdp__price" data-price-slot>Price over DM</p>
 
         <p class="pdp__lede">One silhouette, cut heavy and worn in from the first day.
           Built to be the thing you reach for without thinking: on the bike, in the
           gym, three hundred kilometres from anywhere.</p>
+
+        <!-- how the piece runs. an indicator, not a control: you pick the size
+             below, this tells you what that size will feel like. -->
+        <div class="fit">
+          <h2 class="panel__label">Fit</h2>
+          <div class="fit__scale" role="img" aria-label="Runs oversized">
+            <span></span><span></span><span></span><span class="is-on"></span><span></span>
+          </div>
+          <div class="fit__labels" aria-hidden="true">
+            <span>Small</span><span>True to size</span><span>Oversized</span>
+          </div>
+        </div>
 
         <h2 class="panel__label">Select size</h2>
         <div class="chips">
@@ -121,14 +136,20 @@
           <button type="button" class="chip" data-size="L" aria-pressed="false">L</button>
           <button type="button" class="chip" data-size="XL" aria-pressed="false">XL</button>
         </div>
-        <p class="note">Pick a size and the order message writes itself.</p>
 
-        <div class="panel__actions">
-          <a class="btn btn--solid magnetic" data-order-wa
-             href="https://wa.me/000000000000" target="_blank" rel="noopener">Order on WhatsApp</a>
-          <a class="btn magnetic"
-             href="https://www.instagram.com/vallorawear/" target="_blank" rel="noopener">DM on Instagram</a>
+        <div class="buy">
+          <div class="qty">
+            <button type="button" data-qty-act="dec" aria-label="One fewer">&minus;</button>
+            <span data-qty-val>1</span>
+            <button type="button" data-qty-act="inc" aria-label="One more">+</button>
+          </div>
+          <button class="btn btn--solid" type="button" data-add>Add to cart</button>
+          <p class="buy__err" data-add-err hidden></p>
         </div>
+
+        <p class="pdp__alt">Rather just message us? <a data-order-wa
+           href="https://wa.me/000000000000" target="_blank" rel="noopener">Order on WhatsApp</a>
+           or <a href="https://www.instagram.com/vallorawear/" target="_blank" rel="noopener">DM on Instagram</a>.</p>
 
         <h2 class="panel__label">Specification</h2>
         <dl class="specs">
@@ -311,5 +332,6 @@
 
 <script src="../assets/js/config.js"></script>
 <script src="../assets/js/main.js"></script>
+<script src="../assets/js/cart.js"></script>
 </body>
 </html>
